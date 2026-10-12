@@ -7,6 +7,8 @@ import '../ui/events/event_form_screen.dart';
 import '../ui/history/history_screen.dart';
 import '../ui/home/home_screen.dart';
 import '../ui/onboarding/onboarding_screen.dart';
+import '../ui/profile/profile_screen.dart';
+import '../ui/profile/weight_screen.dart';
 import '../ui/pets/pet_form_screen.dart';
 import '../ui/pets/pets_screen.dart';
 
@@ -72,6 +74,16 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
           path: '/pets/:id/edit',
           parentNavigatorKey: rootNavigatorKey,
           builder: (_, s) => PetFormScreen(petId: s.pathParameters['id']),
+        ),
+        GoRoute(
+          path: '/pets/:id',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => ProfileScreen(petId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/pets/:id/weight',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => WeightScreen(petId: s.pathParameters['id']!),
         ),
       ],
     );
