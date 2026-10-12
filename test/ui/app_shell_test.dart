@@ -21,10 +21,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(NavigationBar), findsOneWidget);
 
-    addTearDown(() async {
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(Duration.zero);
-      await env.db.close();
-    });
+    await unmount(tester);
+    addTearDown(env.db.close);
   });
 }
