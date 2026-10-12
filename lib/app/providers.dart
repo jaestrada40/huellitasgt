@@ -12,9 +12,11 @@ import '../domain/repositories.dart';
 import '../services/app_prefs.dart';
 import '../services/attachment_store.dart';
 import '../services/backup_service.dart';
+import '../services/pdf_exporter.dart';
 import '../services/pin_store.dart';
 import '../services/reminder_coordinator.dart';
 import '../services/reminder_scheduler.dart';
+import '../services/share_service.dart';
 
 // Se sobreescriben en main.dart (y en las pruebas).
 final databaseProvider = Provider<AppDatabase>((ref) => throw UnimplementedError('override'));
@@ -96,3 +98,6 @@ final weightsForPetProvider = StreamProvider.family<List<WeightEntry>, String>(
 
 final notificationsAllowedProvider = FutureProvider.autoDispose<bool>(
     (ref) => ref.watch(schedulerProvider).hasPermission());
+
+final pdfExporterProvider = Provider<PdfExporter>((ref) => const PdfExporter());
+final shareFileProvider = Provider<ShareFile>((ref) => shareFileWithSystem);

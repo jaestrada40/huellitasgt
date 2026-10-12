@@ -54,6 +54,7 @@ class TestEnv {
         secretStoreProvider.overrideWithValue(secrets),
         clockProvider.overrideWithValue(() => now),
         idGeneratorProvider.overrideWithValue(() => 'id${_ids++}'),
+        shareFileProvider.overrideWithValue((path) async => shared.add(path)),
       ];
 }
 
