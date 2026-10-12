@@ -19,12 +19,12 @@ class ProfileScreen extends ConsumerWidget {
   Future<void> _archive(BuildContext context, WidgetRef ref, Pet pet) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text('¿Archivar a ${pet.name}?'),
         content: const Text('Dejará de aparecer y de generar avisos. Su historial se conserva en los respaldos.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Archivar')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Archivar')),
         ],
       ),
     );

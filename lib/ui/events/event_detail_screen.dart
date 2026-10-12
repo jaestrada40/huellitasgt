@@ -37,12 +37,12 @@ class EventDetailScreen extends ConsumerWidget {
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('¿Eliminar este registro?'),
         content: const Text('También se borrarán sus fotos. Esta acción no se puede deshacer.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Eliminar')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Eliminar')),
         ],
       ),
     );
@@ -59,7 +59,7 @@ class EventDetailScreen extends ConsumerWidget {
     final file = ref.read(attachmentStoreProvider).fileFor(a.relativePath);
     showDialog<void>(
       context: context,
-      builder: (_) => Dialog(
+      builder: (dialogContext) => Dialog(
         child: InteractiveViewer(child: Image.file(file)),
       ),
     );

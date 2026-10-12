@@ -50,12 +50,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final prefs = ref.read(prefsProvider);
     final d = await showDialog<int>(
       context: context,
-      builder: (_) => SimpleDialog(
+      builder: (dialogContext) => SimpleDialog(
         title: const Text('Avisar con anticipación'),
         children: [
           for (final n in const [1, 2, 3, 5, 7, 14])
             SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, n),
+              onPressed: () => Navigator.pop(dialogContext, n),
               child: Text('$n ${n == 1 ? 'día' : 'días'} antes'),
             ),
         ],
@@ -91,15 +91,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final s = prepared.summary;
       final ok = await showDialog<bool>(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Importar respaldo'),
           content: Text(
             'Se encontraron ${s.pets} ${s.pets == 1 ? 'mascota' : 'mascotas'} y ${s.events} '
             '${s.events == 1 ? 'registro' : 'registros'}. Esto reemplazará todos los datos de este teléfono. ¿Continuar?',
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Reemplazar')),
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancelar')),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Reemplazar')),
           ],
         ),
       );
@@ -231,13 +231,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => showDialog<void>(
                   context: context,
-                  builder: (_) => AlertDialog(
+                  builder: (dialogContext) => AlertDialog(
                     title: const Text('Privacidad'),
                     content: const Text(
                       'Huellitas guarda toda la información y las fotos solo en tu teléfono. '
                       'No tiene cuentas, no envía datos a ningún servidor y no usa publicidad ni analíticas de terceros.',
                     ),
-                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))],
+                    actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cerrar'))],
                   ),
                 ),
               ),
