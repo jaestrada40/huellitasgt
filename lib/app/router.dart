@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../domain/enums.dart';
 import '../ui/events/event_detail_screen.dart';
 import '../ui/events/event_form_screen.dart';
+import '../ui/history/history_screen.dart';
 import '../ui/home/home_screen.dart';
 import '../ui/onboarding/onboarding_screen.dart';
 import '../ui/pets/pet_form_screen.dart';
@@ -36,7 +37,7 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
               GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
             ]),
             StatefulShellBranch(routes: [
-              GoRoute(path: '/history', builder: (_, _) => const _Stub('Historial')),
+              GoRoute(path: '/history', builder: (_, _) => const HistoryScreen()),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(path: '/pets', builder: (_, _) => const PetsScreen()),
