@@ -10,19 +10,12 @@ import '../ui/home/home_screen.dart';
 import '../ui/onboarding/onboarding_screen.dart';
 import '../ui/profile/profile_screen.dart';
 import '../ui/profile/weight_screen.dart';
+import '../ui/settings/pin_setup_screen.dart';
+import '../ui/settings/settings_screen.dart';
 import '../ui/pets/pet_form_screen.dart';
 import '../ui/pets/pets_screen.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
-
-/// Pantalla provisional; cada tarea de UI reemplaza la suya por la real.
-class _Stub extends StatelessWidget {
-  const _Stub(this.title);
-  final String title;
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(appBar: AppBar(title: Text(title)), body: Center(child: Text(title)));
-}
 
 GoRouter buildRouter({required String initialLocation}) => GoRouter(
       navigatorKey: rootNavigatorKey,
@@ -46,9 +39,14 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
               GoRoute(path: '/pets', builder: (_, _) => const PetsScreen()),
             ]),
             StatefulShellBranch(routes: [
-              GoRoute(path: '/settings', builder: (_, _) => const _Stub('Ajustes')),
+              GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
             ]),
           ],
+        ),
+        GoRoute(
+          path: '/settings/pin',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, _) => const PinSetupScreen(),
         ),
         GoRoute(
           path: '/events/new',

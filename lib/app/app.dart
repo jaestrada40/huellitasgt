@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../ui/settings/lock_gate.dart';
 import '../ui/theme.dart';
 import 'providers.dart';
 import 'router.dart';
@@ -32,6 +33,7 @@ class _HuellitasAppState extends ConsumerState<HuellitasApp> {
         debugShowCheckedModeBanner: false,
         theme: buildTheme(bundledFont: widget.bundledFont),
         routerConfig: _router,
+        builder: (context, child) => LockGate(child: child ?? const SizedBox.shrink()),
         locale: const Locale('es', 'MX'),
         supportedLocales: const [Locale('es', 'MX')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,

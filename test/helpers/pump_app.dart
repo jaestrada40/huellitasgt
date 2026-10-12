@@ -43,6 +43,7 @@ class TestEnv {
   final DateTime now;
   final InMemorySecrets secrets;
   final List<String> shared = [];
+  File? pickedBackup;
   int _ids = 0;
 
   /// Agregar aquí los overrides de providers que se creen en tareas posteriores.
@@ -55,6 +56,8 @@ class TestEnv {
         clockProvider.overrideWithValue(() => now),
         idGeneratorProvider.overrideWithValue(() => 'id${_ids++}'),
         shareFileProvider.overrideWithValue((path) async => shared.add(path)),
+        biometricAuthProvider.overrideWithValue(() async => false),
+        pickBackupFileProvider.overrideWithValue(() async => pickedBackup),
       ];
 }
 

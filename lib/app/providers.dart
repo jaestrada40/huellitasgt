@@ -13,6 +13,7 @@ import '../services/app_prefs.dart';
 import '../services/attachment_store.dart';
 import '../services/backup_service.dart';
 import '../services/pdf_exporter.dart';
+import '../services/platform_hooks.dart';
 import '../services/pin_store.dart';
 import '../services/reminder_coordinator.dart';
 import '../services/reminder_scheduler.dart';
@@ -101,3 +102,9 @@ final notificationsAllowedProvider = FutureProvider.autoDispose<bool>(
 
 final pdfExporterProvider = Provider<PdfExporter>((ref) => const PdfExporter());
 final shareFileProvider = Provider<ShareFile>((ref) => shareFileWithSystem);
+
+typedef BiometricAuth = Future<bool> Function();
+typedef PickBackupFile = Future<File?> Function();
+
+final biometricAuthProvider = Provider<BiometricAuth>((ref) => authenticateWithBiometrics);
+final pickBackupFileProvider = Provider<PickBackupFile>((ref) => pickBackupZip);
