@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../app/providers.dart';
 import '../domain/enums.dart';
@@ -191,4 +192,22 @@ class RoundIconButton extends StatelessWidget {
         shadowColor: AppColors.shadow.withValues(alpha: 0.3),
         child: IconButton(tooltip: tooltip, onPressed: onTap, icon: Icon(icon, color: AppColors.ink, size: 22)),
       );
+}
+
+/// Encabezado de pantallas secundarias: «‹ Atrás» y el título grande.
+class BackHeader extends StatelessWidget {
+  const BackHeader(this.title, {super.key});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        TextButton.icon(
+          onPressed: () => context.pop(),
+          style: TextButton.styleFrom(padding: EdgeInsets.zero, alignment: Alignment.centerLeft),
+          icon: const Icon(Icons.chevron_left_rounded, size: 28),
+          label: const Text('Atrás', style: TextStyle(fontSize: 16)),
+        ),
+        Text(title, style: AppText.title),
+        const SizedBox(height: 16),
+      ]);
 }

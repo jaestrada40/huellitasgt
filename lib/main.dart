@@ -35,6 +35,9 @@ Future<void> main() async {
       prefsProvider.overrideWithValue(prefs),
       schedulerProvider.overrideWithValue(scheduler),
     ],
-    child: HuellitasApp(initialLocation: hasPets ? '/home' : '/onboarding'),
+    child: HuellitasApp(
+      initialLocation: hasPets ? '/home' : '/onboarding',
+      tour: kSeedDemo && kTour ? kTourRoutes : null,
+    ),
   ));
 }

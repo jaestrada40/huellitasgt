@@ -34,6 +34,12 @@ class ReminderCoordinator {
       hour: _prefs.reminderHour,
       minute: _prefs.reminderMinute,
     );
-    await _scheduler.replaceAll(plan);
+    try {
+      await _scheduler.replaceAll(plan);
+    } catch (_) {
+      // Los avisos son «lo mejor posible»: sin permiso del teléfono (o con un
+      // fallo del plugin) la app debe seguir guardando datos sin interrumpirse.
+      // Home y Ajustes ya avisan cuando las notificaciones están apagadas.
+    }
   }
 }

@@ -14,75 +14,105 @@ class WeightScreen extends ConsumerWidget {
   final String petId;
 
   Future<void> _add(BuildContext context) => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => _AddWeightSheet(petId: petId),
-      );
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => _AddWeightSheet(petId: petId),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final entries = ref.watch(weightsForPetProvider(petId)).asData?.value ?? const <WeightEntry>[];
+    final entries =
+        ref.watch(weightsForPetProvider(petId)).asData?.value ??
+        const <WeightEntry>[];
     final now = ref.watch(clockProvider)();
     final trend = weightTrend(entries, now);
     final delta = trend?.deltaVsMonthAgo;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Peso')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _add(context),
         icon: const Icon(Icons.add),
         label: const Text('Registrar peso'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-        children: [
-          AppCard(
-            child: trend == null
-                ? const Text('Aún no hay registros de peso.')
-                : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Peso actual', style: TextStyle(color: AppColors.inkSoft)),
-                    Text('${trend.current.toStringAsFixed(1)} kg',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
-                    if (delta != null)
-                      Text('${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)} kg vs mes pasado',
-                          style: const TextStyle(color: AppColors.inkSoft)),
-                  ]),
-          ),
-          if (entries.length >= 2)
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 96),
+          children: [
+            const BackHeader('Peso'),
             AppCard(
-              child: SizedBox(
-                height: 160,
-                width: double.infinity,
-                child: CustomPaint(painter: _WeightChartPainter(entries)),
-              ),
+              child: trend == null
+                  ? const Text('Aún no hay registros de peso.')
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Peso actual',
+                          style: TextStyle(color: AppColors.inkSoft),
+                        ),
+                        Text(
+                          '${trend.current.toStringAsFixed(1)} kg',
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        if (delta != null)
+                          Text(
+                            '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)} kg vs mes pasado',
+                            style: const TextStyle(color: AppColors.inkSoft),
+                          ),
+                      ],
+                    ),
             ),
-          const SectionHeader('Registros'),
-          for (final e in entries)
-            Dismissible(
-              key: ValueKey(e.id),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 16),
-                color: AppColors.coral,
-                child: const Icon(Icons.delete, color: Colors.white),
+            if (entries.length >= 2)
+              AppCard(
+                child: SizedBox(
+                  height: 160,
+                  width: double.infinity,
+                  child: CustomPaint(painter: _WeightChartPainter(entries)),
+                ),
               ),
-              onDismissed: (_) => ref.read(weightRepoProvider).delete(e.id),
-              child: AppCard(
-                child: Row(children: [
-                  const Icon(Icons.scale, color: AppColors.primary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('${e.kg.toStringAsFixed(1)} kg', style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text([fmtDay(e.date), if (e.note != null) e.note!].join(' · '),
-                          style: const TextStyle(color: AppColors.inkSoft)),
-                    ]),
+            const SectionHeader('Registros'),
+            for (final e in entries)
+              Dismissible(
+                key: ValueKey(e.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16),
+                  color: AppColors.coral,
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (_) => ref.read(weightRepoProvider).delete(e.id),
+                child: AppCard(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.scale, color: AppColors.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${e.kg.toStringAsFixed(1)} kg',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              [
+                                fmtDay(e.date),
+                                if (e.note != null) e.note!,
+                              ].join(' · '),
+                              style: const TextStyle(color: AppColors.inkSoft),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ]),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -90,7 +120,7 @@ class WeightScreen extends ConsumerWidget {
 
 class _WeightChartPainter extends CustomPainter {
   _WeightChartPainter(List<WeightEntry> entries)
-      : points = ([...entries]..sort((a, b) => a.date.compareTo(b.date)));
+    : points = ([...entries]..sort((a, b) => a.date.compareTo(b.date)));
   final List<WeightEntry> points;
 
   @override
@@ -99,12 +129,15 @@ class _WeightChartPainter extends CustomPainter {
     final maxKg = points.map((p) => p.kg).reduce((a, b) => a > b ? a : b);
     final range = (maxKg - minKg) == 0 ? 1.0 : (maxKg - minKg);
     final t0 = points.first.date.millisecondsSinceEpoch;
-    final span = (points.last.date.millisecondsSinceEpoch - t0).clamp(1, 1 << 62);
+    final span = (points.last.date.millisecondsSinceEpoch - t0).clamp(
+      1,
+      1 << 62,
+    );
 
     Offset at(WeightEntry p) => Offset(
-          (p.date.millisecondsSinceEpoch - t0) / span * (size.width - 16) + 8,
-          size.height - 16 - (p.kg - minKg) / range * (size.height - 32),
-        );
+      (p.date.millisecondsSinceEpoch - t0) / span * (size.width - 16) + 8,
+      size.height - 16 - (p.kg - minKg) / range * (size.height - 32),
+    );
 
     final line = Paint()
       ..color = AppColors.primary
@@ -162,47 +195,67 @@ class _AddWeightSheetState extends ConsumerState<_AddWeightSheet> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final note = _note.text.trim();
-    await ref.read(weightRepoProvider).save(WeightEntry(
-          id: ref.read(idGeneratorProvider)(),
-          petId: widget.petId,
-          date: dateOnly(_date),
-          kg: _parsed!,
-          note: note.isEmpty ? null : note,
-        ));
-    if (mounted) Navigator.of(context).pop(); // hoja modal, no es una ruta de go_router
+    await ref
+        .read(weightRepoProvider)
+        .save(
+          WeightEntry(
+            id: ref.read(idGeneratorProvider)(),
+            petId: widget.petId,
+            date: dateOnly(_date),
+            kg: _parsed!,
+            note: note.isEmpty ? null : note,
+          ),
+        );
+    if (mounted) {
+      Navigator.of(context).pop(); // hoja modal, no es una ruta de go_router
+    }
   }
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).viewInsets.bottom),
-        child: Form(
-          key: _formKey,
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('Agregar peso', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            TextFormField(
-              key: const Key('weightField'),
-              controller: _kg,
-              autofocus: true,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Peso en kg'),
-              validator: (v) {
-                final w = _parsed;
-                return (w == null || w <= 0 || w >= 300) ? 'Escribe un peso válido' : null;
-              },
-            ),
-            const SizedBox(height: 12),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Fecha'),
-              subtitle: Text(fmtDay(_date)),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: _pickDate,
-            ),
-            TextFormField(controller: _note, decoration: const InputDecoration(labelText: 'Nota (opcional)')),
-            const SizedBox(height: 16),
-            FilledButton(onPressed: _save, child: const Text('Guardar peso')),
-          ]),
-        ),
-      );
+    padding: EdgeInsets.fromLTRB(
+      16,
+      16,
+      16,
+      16 + MediaQuery.of(context).viewInsets.bottom,
+    ),
+    child: Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Agregar peso', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          TextFormField(
+            key: const Key('weightField'),
+            controller: _kg,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Peso en kg'),
+            validator: (v) {
+              final w = _parsed;
+              return (w == null || w <= 0 || w >= 300)
+                  ? 'Escribe un peso válido'
+                  : null;
+            },
+          ),
+          const SizedBox(height: 12),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Fecha'),
+            subtitle: Text(fmtDay(_date)),
+            trailing: const Icon(Icons.calendar_today),
+            onTap: _pickDate,
+          ),
+          TextFormField(
+            controller: _note,
+            decoration: const InputDecoration(labelText: 'Nota (opcional)'),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(onPressed: _save, child: const Text('Guardar peso')),
+        ],
+      ),
+    ),
+  );
 }

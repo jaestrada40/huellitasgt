@@ -281,7 +281,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 10.5,
+                                  fontSize: 9.5,
                                   fontWeight: FontWeight.w700,
                                   color: _type == t
                                       ? AppColors.ink

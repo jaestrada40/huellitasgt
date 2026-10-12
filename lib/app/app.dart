@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,8 +11,11 @@ import 'providers.dart';
 import 'router.dart';
 
 class HuellitasApp extends ConsumerStatefulWidget {
-  const HuellitasApp({super.key, required this.initialLocation});
+  const HuellitasApp({super.key, required this.initialLocation, this.tour});
   final String initialLocation;
+
+  /// Solo desarrollo: rutas que se visitan solas, una cada 7 s.
+  final List<String>? tour;
 
   @override
   ConsumerState<HuellitasApp> createState() => _HuellitasAppState();
@@ -24,6 +29,22 @@ class _HuellitasAppState extends ConsumerState<HuellitasApp> {
     super.initState();
     // Reprograma los avisos cada vez que se abre la app.
     Future.microtask(() => ref.read(reminderCoordinatorProvider).sync());
+    final tour = widget.tour;
+    if (tour != null) {
+      var i = 0;
+      _tourTimer = Timer.periodic(const Duration(seconds: 7), (_) {
+        _router.go(tour[i % tour.length]);
+        i++;
+      });
+    }
+  }
+
+  Timer? _tourTimer;
+
+  @override
+  void dispose() {
+    _tourTimer?.cancel();
+    super.dispose();
   }
 
   @override

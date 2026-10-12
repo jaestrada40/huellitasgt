@@ -10,6 +10,24 @@ import '../services/app_prefs.dart';
 /// `flutter run --dart-define=SEED_DEMO=true` y nunca en la app publicada.
 const bool kSeedDemo = bool.fromEnvironment('SEED_DEMO');
 
+/// Recorre las pantallas solo (para capturas de pantalla en desarrollo):
+/// `--dart-define=SEED_DEMO=true --dart-define=TOUR=true`.
+const bool kTour = bool.fromEnvironment('TOUR');
+
+const List<String> kTourRoutes = [
+  '/home',
+  '/history',
+  '/pets',
+  '/pets/canela',
+  '/events/demo1',
+  '/events/new?petId=canela',
+  '/settings',
+  '/pets/canela/carnet',
+  '/pets/canela/weight',
+  '/onboarding?replay=1',
+  '/pets/new?first=1',
+];
+
 Future<void> seedDemo(AppDatabase db, AppPrefs prefs) async {
   final pets = DriftPetRepository(db);
   if ((await pets.all()).isNotEmpty) return;

@@ -49,4 +49,12 @@ void main() {
     await coordinator.sync();
     expect(scheduler.last, isEmpty);
   });
+
+  test('si el teléfono rechaza programar avisos (sin permiso) sync no falla ni interrumpe al llamador', () async {
+    await pets.save(samplePet());
+    await treatments.save(sampleTreatment());
+    scheduler.failWith = StateError('Source is not authorized');
+    await coordinator.sync(); // no lanza
+    expect(scheduler.syncCount, 0);
+  });
 }
