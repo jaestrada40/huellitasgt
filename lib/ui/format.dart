@@ -14,3 +14,9 @@ IconData iconForType(EventType t) => switch (t) {
       EventType.illness => Icons.thermostat,
       EventType.checkup => Icons.medical_services,
     };
+
+String speciesLabel(PetSpecies s) => switch (s) {
+      PetSpecies.dog => 'Perro',
+      PetSpecies.cat => 'Gato',
+      PetSpecies.other => 'Otra mascota',
+    };

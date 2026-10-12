@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../ui/onboarding/onboarding_screen.dart';
+import '../ui/pets/pet_form_screen.dart';
+import '../ui/pets/pets_screen.dart';
+
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Pantalla provisional; cada tarea de UI reemplaza la suya por la real.
@@ -19,7 +23,7 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
         GoRoute(
           path: '/onboarding',
           parentNavigatorKey: rootNavigatorKey,
-          builder: (_, _) => const _Stub('Onboarding'),
+          builder: (_, _) => const OnboardingScreen(),
         ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => AppShell(shell: shell),
@@ -31,12 +35,22 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
               GoRoute(path: '/history', builder: (_, _) => const _Stub('Historial')),
             ]),
             StatefulShellBranch(routes: [
-              GoRoute(path: '/pets', builder: (_, _) => const _Stub('Mascotas')),
+              GoRoute(path: '/pets', builder: (_, _) => const PetsScreen()),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(path: '/settings', builder: (_, _) => const _Stub('Ajustes')),
             ]),
           ],
+        ),
+        GoRoute(
+          path: '/pets/new',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => PetFormScreen(first: s.uri.queryParameters['first'] == '1'),
+        ),
+        GoRoute(
+          path: '/pets/:id/edit',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => PetFormScreen(petId: s.pathParameters['id']),
         ),
       ],
     );
