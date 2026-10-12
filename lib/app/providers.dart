@@ -93,3 +93,6 @@ final eventsForPetProvider = StreamProvider.family<List<HealthEvent>, String>(
 
 final weightsForPetProvider = StreamProvider.family<List<WeightEntry>, String>(
     (ref, petId) => ref.watch(weightRepoProvider).watchForPet(petId));
+
+final notificationsAllowedProvider = FutureProvider.autoDispose<bool>(
+    (ref) => ref.watch(schedulerProvider).hasPermission());

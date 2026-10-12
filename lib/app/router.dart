@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../ui/home/home_screen.dart';
 import '../ui/onboarding/onboarding_screen.dart';
 import '../ui/pets/pet_form_screen.dart';
 import '../ui/pets/pets_screen.dart';
@@ -29,7 +30,7 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
           builder: (context, state, shell) => AppShell(shell: shell),
           branches: [
             StatefulShellBranch(routes: [
-              GoRoute(path: '/home', builder: (_, _) => const _Stub('Inicio')),
+              GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(path: '/history', builder: (_, _) => const _Stub('Historial')),

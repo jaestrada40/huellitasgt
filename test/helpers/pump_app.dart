@@ -105,6 +105,15 @@ Future<void> pumpScreen(WidgetTester tester, TestEnv env, Widget screen) async {
   });
 }
 
+/// Desmonta el árbol dentro del cuerpo de la prueba. Drift deja un
+/// `Timer.run` al cancelar sus streams y Flutter revisa los temporizadores
+/// pendientes antes de ejecutar los `addTearDown`; llamar al final de toda
+/// prueba cuya pantalla escuche streams.
+Future<void> unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  await tester.pump(Duration.zero);
+}
+
 /// Para sembrar o consultar la BD dentro de un testWidgets sin que el reloj
 /// falso de Flutter bloquee las operaciones asíncronas.
 Future<T> runDb<T>(WidgetTester tester, Future<T> Function() f) async =>
