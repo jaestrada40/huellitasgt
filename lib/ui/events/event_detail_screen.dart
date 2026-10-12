@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../domain/enums.dart';
 import '../../domain/models.dart';
+import '../../domain/treatment_status.dart';
 import '../format.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -55,6 +56,12 @@ class EventDetailScreen extends ConsumerWidget {
     if (context.mounted) context.pop();
   }
 
+  Future<void> _markDone(BuildContext context, WidgetRef ref, Treatment t) async {
+    await ref.read(healthServiceProvider).markDone(t.id);
+    await ref.read(reminderCoordinatorProvider).sync();
+    if (context.mounted) context.pop();
+  }
+
   void _openPhoto(BuildContext context, WidgetRef ref, Attachment a) {
     final file = ref.read(attachmentStoreProvider).fileFor(a.relativePath);
     showDialog<void>(
@@ -68,86 +75,145 @@ class EventDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(eventDetailProvider(eventId));
+    final now = ref.watch(clockProvider)();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalle'),
-        actions: [
-          IconButton(
-            key: const Key('deleteEventButton'),
-            icon: const Icon(Icons.delete_outline, color: AppColors.coral),
-            onPressed: () => _delete(context, ref),
-          ),
-        ],
-      ),
-      body: detail.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => const Center(child: Text('No se pudo cargar el registro')),
-        data: (d) {
-          if (d == null) return const Center(child: Text('Este registro ya no existe'));
-          final e = d.event;
-          Widget row(String label, String? value) => value == null
-              ? const SizedBox.shrink()
-              : Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    SizedBox(width: 110, child: Text(label, style: const TextStyle(color: AppColors.inkSoft))),
-                    Expanded(child: Text(value)),
+      body: SafeArea(
+        child: detail.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => const Center(child: Text('No se pudo cargar el registro')),
+          data: (d) {
+            if (d == null) return const Center(child: Text('Este registro ya no existe'));
+            final e = d.event;
+            final t = (d.treatment != null && d.treatment!.active) ? d.treatment : null;
+            final status = t == null ? null : dueStatus(t.nextDueDate, now);
+            final (nextBg, nextFg) = switch (status) {
+              DueStatus.overdue => (AppColors.coral.withValues(alpha: 0.15), AppColors.coral),
+              DueStatus.upcoming => (AppColors.mint, AppColors.mintInk),
+              _ => (AppColors.peach, AppColors.orangeText),
+            };
+            final rows = <(String, String)>[
+              ('Fecha aplicada', fmtDay(e.occurredAt)),
+              if (t != null) ('Frecuencia', frequencyLabel(t.intervalValue, t.intervalUnit)),
+              if (e.product != null && e.product != e.title) ('Producto', e.product!),
+              if (e.lot != null) ('Lote', e.lot!),
+              if (e.vetName != null) ('Veterinario', e.vetName!),
+              if (e.clinic != null) ('Clínica', e.clinic!),
+              if (e.weightKg != null) ('Peso', '${e.weightKg} kg'),
+              if (t != null)
+                ('Recordatorio', t.reminderEnabled ? '${t.reminderDaysBefore} ${t.reminderDaysBefore == 1 ? 'día' : 'días'} antes' : 'Desactivado'),
+            ];
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => context.pop(),
+                    icon: const Icon(Icons.chevron_left_rounded, size: 28),
+                    label: const Text('Atrás', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+                Center(child: TypeIcon(e.type, size: 56)),
+                const SizedBox(height: 12),
+                Text(e.type.label.toUpperCase(), textAlign: TextAlign.center, style: AppText.caps),
+                const SizedBox(height: 4),
+                Text(e.title, textAlign: TextAlign.center, style: AppText.title),
+                const SizedBox(height: 8),
+                if (d.pet != null)
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    PetAvatar(pet: d.pet!, size: 24),
+                    const SizedBox(width: 8),
+                    Text(d.pet!.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink)),
                   ]),
-                );
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              AppCard(
-                child: Row(children: [
-                  Icon(iconForType(e.type), color: AppColors.primary, size: 36),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(e.title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-                      Text(e.type.label, style: const TextStyle(color: AppColors.inkSoft)),
+                const SizedBox(height: 16),
+                if (t != null)
+                  AppCard(
+                    color: nextBg,
+                    child: Row(children: [
+                      Icon(Icons.calendar_month_outlined, color: nextFg, size: 26),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text('PRÓXIMA FECHA', style: AppText.caps.copyWith(color: nextFg)),
+                          Text(fmtDay(t.nextDueDate),
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                        ]),
+                      ),
+                      Text(dueLabel(t.nextDueDate, now), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: nextFg)),
                     ]),
                   ),
-                ]),
-              ),
-              AppCard(
-                child: Column(children: [
-                  row('Mascota', d.pet?.name),
-                  row('Fecha', fmtDateTime(e.occurredAt)),
-                  row('Producto', e.product),
-                  row('Lote', e.lot),
-                  row('Veterinario', e.vetName),
-                  row('Clínica', e.clinic),
-                  row('Peso', e.weightKg == null ? null : '${e.weightKg} kg'),
-                  row('Notas', e.notes),
-                ]),
-              ),
-              if (d.treatment != null && d.treatment!.active)
                 AppCard(
-                  color: AppColors.mint,
-                  child: Text('Próxima dosis: ${fmtDay(d.treatment!.nextDueDate)}'),
+                  padding: EdgeInsets.zero,
+                  child: Column(children: [
+                    for (var i = 0; i < rows.length; i++) ...[
+                      if (i > 0) const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: Row(children: [
+                          Text(rows[i].$1, style: const TextStyle(fontSize: 16, color: AppColors.inkSoft)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(rows[i].$2,
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                          ),
+                        ]),
+                      ),
+                    ],
+                  ]),
                 ),
-              if (d.attachments.isNotEmpty) ...[
-                const SectionHeader('Comprobante y carnet'),
-                Wrap(spacing: 8, runSpacing: 8, children: [
-                  for (final a in d.attachments)
-                    GestureDetector(
-                      onTap: () => _openPhoto(context, ref, a),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          ref.read(attachmentStoreProvider).fileFor(a.relativePath),
-                          width: 96,
-                          height: 96,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const SizedBox(width: 96, height: 96, child: Icon(Icons.broken_image)),
+                if (e.notes != null) ...[
+                  const SectionHeader('Notas'),
+                  AppCard(child: Text(e.notes!, style: const TextStyle(fontSize: 16, color: AppColors.ink))),
+                ],
+                const SectionHeader('Documentos'),
+                if (d.attachments.isEmpty)
+                  const AppCard(
+                    child: Row(children: [
+                      Icon(Icons.folder_open_outlined, color: AppColors.primary),
+                      SizedBox(width: 12),
+                      Expanded(child: Text('Sin fotos del carnet o recibo.', style: AppText.body)),
+                    ]),
+                  )
+                else
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    for (final a in d.attachments)
+                      GestureDetector(
+                        onTap: () => _openPhoto(context, ref, a),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.file(
+                            ref.read(attachmentStoreProvider).fileFor(a.relativePath),
+                            width: 96,
+                            height: 96,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => const SizedBox(width: 96, height: 96, child: Icon(Icons.broken_image)),
+                          ),
                         ),
                       ),
-                    ),
-                ]),
+                  ]),
+                const SizedBox(height: 16),
+                if (t != null)
+                  FilledButton.icon(
+                    onPressed: () => _markDone(context, ref, t),
+                    icon: const Icon(Icons.check_rounded),
+                    label: const Text('Marcar como hecha'),
+                  ),
+                const SizedBox(height: 8),
+                FilledButton.icon(
+                  key: const Key('deleteEventButton'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.coral.withValues(alpha: 0.15),
+                    foregroundColor: AppColors.coral,
+                  ),
+                  onPressed: () => _delete(context, ref),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Eliminar registro'),
+                ),
               ],
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -25,7 +25,7 @@ void main() {
     await tester.tap(find.text('Cerrar'));
     await tester.pumpAndSettle();
     expect(find.text('Cerrar'), findsNothing);
-    expect(find.text('Hora del aviso'), findsOneWidget);
+    expect(find.text('Notificaciones'), findsOneWidget);
 
     await unmount(tester);
     addTearDown(env.db.close);
@@ -42,13 +42,15 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('Notificaciones'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Avisar con anticipación'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('7 días antes'));
     await tester.pumpAndSettle();
 
     expect(env.prefs.reminderDaysBefore, 7);
-    expect(find.text('Hora del aviso'), findsOneWidget);
+    expect(find.text('Hora del aviso'), findsOneWidget); // la hoja sigue abierta y Ajustes intacta
 
     await unmount(tester);
     addTearDown(env.db.close);

@@ -28,3 +28,14 @@ String fmtLongDate(DateTime d) => DateFormat("EEEE, d 'de' MMMM", 'es_MX').forma
 String fmtShortDay(DateTime d) => DateFormat('d MMM', 'es_MX').format(d).replaceAll('.', '');
 
 String greeting(String? name) => (name == null || name.isEmpty) ? 'Hola' : 'Hola, $name';
+
+String frequencyLabel(int value, IntervalUnit unit) {
+  final one = value == 1;
+  final word = switch (unit) {
+    IntervalUnit.days => one ? 'día' : 'días',
+    IntervalUnit.weeks => one ? 'semana' : 'semanas',
+    IntervalUnit.months => one ? 'mes' : 'meses',
+    IntervalUnit.years => one ? 'año' : 'años',
+  };
+  return 'Cada $value $word';
+}

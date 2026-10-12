@@ -8,6 +8,9 @@ import '../helpers/samples.dart';
 
 void main() {
   Future<TestEnv> setup(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final env = await createEnv(); // hoy = 24 oct 2024
     await runDb(tester, () => DriftPetRepository(env.db).save(samplePet()));
     await pumpScreen(tester, env, const EventFormScreen(petId: 'p1'));
@@ -16,8 +19,8 @@ void main() {
 
   testWidgets('sin nombre muestra el error y no guarda', (tester) async {
     final env = await setup(tester);
-    await tester.ensureVisible(find.text('Guardar en historial'));
-    await tester.tap(find.text('Guardar en historial'));
+    await tester.ensureVisible(find.text('Guardar'));
+    await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
     expect(find.text('Escribe el nombre'), findsOneWidget);
     final events = await runDb(tester, () => DriftEventRepository(env.db).watchForPet('p1').first);
@@ -28,13 +31,14 @@ void main() {
   testWidgets('vacuna con repetición de 1 año guarda evento y tratamiento y reprograma avisos', (tester) async {
     final env = await setup(tester);
     await tester.enterText(find.byKey(const Key('eventTitleField')), 'Antirrábica');
-    await tester.ensureVisible(find.text('1 año'));
-    await tester.tap(find.text('1 año'));
+    await tester.ensureVisible(find.text('Cada 1 año'));
+    await tester.tap(find.text('Cada 1 año'));
     await tester.pump();
-    expect(find.textContaining('Próxima dosis sugerida'), findsOneWidget);
+    expect(find.text('PRÓXIMA FECHA'), findsOneWidget);
+    expect(find.text('24 oct 2025'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Guardar en historial'));
-    await tester.tap(find.text('Guardar en historial'));
+    await tester.ensureVisible(find.text('Guardar'));
+    await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
 
     final events = await runDb(tester, () => DriftEventRepository(env.db).watchForPet('p1').first);
@@ -48,11 +52,11 @@ void main() {
 
   testWidgets('enfermedad no ofrece frecuencia de repetición', (tester) async {
     await setup(tester);
-    expect(find.text('Frecuencia de repetición'), findsOneWidget);
-    await tester.ensureVisible(find.text('Enfermedad'));
-    await tester.tap(find.text('Enfermedad'));
+    expect(find.text('REPETIR'), findsOneWidget);
+    await tester.ensureVisible(find.text('Enfermedades'));
+    await tester.tap(find.text('Enfermedades'));
     await tester.pump();
-    expect(find.text('Frecuencia de repetición'), findsNothing);
+    expect(find.text('REPETIR'), findsNothing);
     await unmount(tester);
   });
 
@@ -60,10 +64,22 @@ void main() {
     await setup(tester);
     await tester.enterText(find.byKey(const Key('eventTitleField')), 'Consulta');
     await tester.enterText(find.byKey(const Key('eventWeightField')), 'abc');
-    await tester.ensureVisible(find.text('Guardar en historial'));
-    await tester.tap(find.text('Guardar en historial'));
+    await tester.ensureVisible(find.text('Guardar'));
+    await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
     expect(find.text('Escribe un peso válido'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('"Listo" en el encabezado también guarda', (tester) async {
+    final env = await setup(tester);
+    await tester.enterText(find.byKey(const Key('eventTitleField')), 'Consulta de rutina');
+    await tester.tap(find.text('Consultas'));
+    await tester.pump();
+    await tester.tap(find.text('Listo'));
+    await tester.pumpAndSettle();
+    final events = await runDb(tester, () => DriftEventRepository(env.db).watchForPet('p1').first);
+    expect(events.single.title, 'Consulta de rutina');
     await unmount(tester);
   });
 }

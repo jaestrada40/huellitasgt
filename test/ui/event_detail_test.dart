@@ -8,10 +8,15 @@ import '../helpers/samples.dart';
 
 void main() {
   Future<TestEnv> setup(WidgetTester tester) async {
-    final env = await createEnv();
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final env = await createEnv(); // hoy = 24 oct 2024
     await runDb(tester, () async {
       await DriftPetRepository(env.db).save(samplePet());
-      await DriftEventRepository(env.db).save(sampleEvent(notes: 'Sin reacciones'), const []);
+      await DriftTreatmentRepository(env.db).save(sampleTreatment(nextDue: DateTime.utc(2024, 10, 29)));
+      await DriftEventRepository(env.db)
+          .save(sampleEvent(notes: 'Sin reacciones', treatmentId: 't1'), const []);
     });
     await pumpScreen(tester, env, const EventDetailScreen(eventId: 'e1'));
     return env;
@@ -23,6 +28,22 @@ void main() {
     expect(find.text('Sin reacciones'), findsOneWidget);
     expect(find.text('Dra. Carmen Morales'), findsOneWidget);
     expect(find.text('Toby'), findsOneWidget);
+    expect(find.text('VACUNA'), findsOneWidget);
+    expect(find.text('29 oct 2024'), findsOneWidget); // próxima fecha
+    expect(find.text('Vence en 5 días'), findsOneWidget);
+    expect(find.text('Cada 1 año'), findsOneWidget);
+    expect(find.text('3 días antes'), findsOneWidget);
+    expect(find.text('Sin fotos del carnet o recibo.'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('Marcar como hecha mueve la próxima fecha desde hoy y reprograma avisos', (tester) async {
+    final env = await setup(tester);
+    await tester.tap(find.text('Marcar como hecha'));
+    await tester.pumpAndSettle();
+    final t = await runDb(tester, () => DriftTreatmentRepository(env.db).get('t1'));
+    expect(t!.nextDueDate, DateTime.utc(2025, 10, 24));
+    expect(env.scheduler.syncCount, greaterThan(0));
     await unmount(tester);
   });
 

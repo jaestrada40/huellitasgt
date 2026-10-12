@@ -36,44 +36,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     _search.clear();
   });
 
-  Future<void> _export(List<Pet> pets) async {
-    final pet = pets.length == 1
-        ? pets.first
-        : await showModalBottomSheet<Pet>(
-            context: context,
-            builder: (sheetContext) => SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      '¿De quién es el historial?',
-                      style: AppText.h2,
-                    ),
-                  ),
-                  for (final p in pets)
-                    ListTile(
-                      leading: PetAvatar(pet: p, size: 40),
-                      title: Text(p.name),
-                      onTap: () => Navigator.pop(sheetContext, p),
-                    ),
-                ],
-              ),
-            ),
-          );
-    if (pet == null) return;
-    final events = await ref.read(eventRepoProvider).watchForPet(pet.id).first;
-    final bytes = await ref
-        .read(pdfExporterProvider)
-        .history(
-          pet: pet,
-          events: events,
-          generatedAt: ref.read(clockProvider)(),
-        );
-    await sharePdf(ref, bytes, 'historial-${pet.name}.pdf');
-  }
-
   @override
   Widget build(BuildContext context) {
     final pets = ref.watch(petsProvider).asData?.value ?? const <Pet>[];
@@ -116,7 +78,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       vertical: 10,
                     ),
                   ),
-                  onPressed: () => _export(pets),
+                  onPressed: () => exportHistoryPdf(context, ref),
                   icon: const Icon(Icons.file_download_outlined, size: 18),
                   label: const Text(
                     'Exportar PDF',

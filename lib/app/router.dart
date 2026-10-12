@@ -25,7 +25,7 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
         GoRoute(
           path: '/onboarding',
           parentNavigatorKey: rootNavigatorKey,
-          builder: (_, _) => const OnboardingScreen(),
+          builder: (_, s) => OnboardingScreen(replay: s.uri.queryParameters['replay'] == '1'),
         ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => AppShell(shell: shell),
@@ -52,11 +52,15 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
         GoRoute(
           path: '/events/new',
           parentNavigatorKey: rootNavigatorKey,
-          builder: (_, s) {
+          pageBuilder: (_, s) {
             final type = s.uri.queryParameters['type'];
-            return EventFormScreen(
-              petId: s.uri.queryParameters['petId'],
-              initialType: type == null ? null : EventType.values.byName(type),
+            return MaterialPage(
+              fullscreenDialog: true, // se abre como hoja desde abajo
+              key: s.pageKey,
+              child: EventFormScreen(
+                petId: s.uri.queryParameters['petId'],
+                initialType: type == null ? null : EventType.values.byName(type),
+              ),
             );
           },
         ),
