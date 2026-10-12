@@ -6,6 +6,12 @@ class AppPrefs {
 
   static Future<AppPrefs> load() async => AppPrefs(await SharedPreferences.getInstance());
 
+  String? get userName => _p.getString('userName');
+  Future<void> setUserName(String name) {
+    final t = name.trim();
+    return t.isEmpty ? _p.remove('userName') : _p.setString('userName', t);
+  }
+
   bool get lockEnabled => _p.getBool('lockEnabled') ?? false;
   Future<void> setLockEnabled(bool v) => _p.setBool('lockEnabled', v);
 

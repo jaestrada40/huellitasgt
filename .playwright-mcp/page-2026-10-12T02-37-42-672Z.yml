@@ -1,0 +1,87 @@
+- generic [ref=f17e1]:
+  - link "Skip to main content" [ref=f17e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - main [ref=f17e39]:
+    - iframe [active] [ref=f17e40]:
+      - generic [active] [ref=f23e1]:
+        - generic [ref=f23e3]:
+          - generic [ref=f23e60]:
+            - generic [ref=f23e61]:
+              - paragraph [ref=f23e62]: domingo, 11 de octubre
+              - heading "Hola, Javier" [level=1] [ref=f23e63]
+            - generic [ref=f23e64]:
+              - button "Todas" [ref=f23e65]
+              - button "Canela Canela" [ref=f23e73]:
+                - img "Canela" [ref=f23e74]
+                - generic [ref=f23e75]: Canela
+              - button "Mango Mango" [ref=f23e76]:
+                - img "Mango" [ref=f23e77]
+                - generic [ref=f23e78]: Mango
+            - generic [ref=f23e79]:
+              - heading "Lo que toca pronto" [level=2] [ref=f23e80]
+              - generic [ref=f23e81]: 5 pendientes
+            - generic [ref=f23e82]:
+              - generic [ref=f23e83] [cursor=pointer]:
+                - generic [ref=f23e95]:
+                  - generic [ref=f23e96]:
+                    - paragraph [ref=f23e97]: NexGard Spectra
+                    - generic [ref=f23e98]: Atrasada 3 días
+                  - paragraph [ref=f23e99]: Canela · 9 oct 2026
+                - button "Marcar como hecha" [ref=f23e100]
+              - generic [ref=f23e104] [cursor=pointer]:
+                - generic [ref=f23e110]:
+                  - generic [ref=f23e111]:
+                    - paragraph [ref=f23e112]: Milbemax gatos
+                    - generic [ref=f23e113]: Hoy
+                  - paragraph [ref=f23e114]: Mango · 12 oct 2026
+                - button "Marcar como hecha" [ref=f23e115]
+              - generic [ref=f23e119] [cursor=pointer]:
+                - generic [ref=f23e129]:
+                  - generic [ref=f23e130]:
+                    - paragraph [ref=f23e131]: Vacuna antirrábica
+                    - generic [ref=f23e132]: Vence en 5 días
+                  - paragraph [ref=f23e133]: Canela · 17 oct 2026
+                - button "Marcar como hecha" [ref=f23e134]
+              - generic [ref=f23e138] [cursor=pointer]:
+                - generic [ref=f23e148]:
+                  - generic [ref=f23e149]:
+                    - paragraph [ref=f23e150]: Triple felina
+                    - generic [ref=f23e151]: Vence en 12 días
+                  - paragraph [ref=f23e152]: Mango · 24 oct 2026
+                - button "Marcar como hecha" [ref=f23e153]
+              - generic [ref=f23e157] [cursor=pointer]:
+                - generic [ref=f23e169]:
+                  - generic [ref=f23e170]:
+                    - paragraph [ref=f23e171]: Revolution Plus
+                    - generic [ref=f23e172]: Vence en 18 días
+                  - paragraph [ref=f23e173]: Mango · 30 oct 2026
+                - button "Marcar como hecha" [ref=f23e174]
+            - heading "Al día" [level=2] [ref=f23e179]
+            - generic [ref=f23e184]:
+              - paragraph [ref=f23e185]: 1 tratamientos
+              - paragraph [ref=f23e186]: vigentes · 2 aplicados este mes
+            - generic [ref=f23e187]:
+              - generic [ref=f23e188]:
+                - generic [ref=f23e197]: "0"
+                - generic [ref=f23e198]: Vacunas
+              - generic [ref=f23e199]:
+                - generic [ref=f23e204]: "1"
+                - generic [ref=f23e205]: Desparasitación
+              - generic [ref=f23e206]:
+                - generic [ref=f23e217]: "0"
+                - generic [ref=f23e218]: Antipulgas
+            - button "Agregar evento" [ref=f23e219]
+          - navigation [ref=f23e221]:
+            - button "Inicio" [ref=f23e222]
+            - button "Historial" [ref=f23e226]
+            - button "Mascotas" [ref=f23e230]
+            - button "Ajustes" [ref=f23e236]
+        - complementary "Edit with Lovable" [ref=f23e26]:
+          - link "Edit with Lovable" [ref=f23e27] [cursor=pointer]:
+            - /url: https://lovable.dev/projects/lovp_0enpfbs92t8p19f583t7ts2mqc?utm_source=lovable-badge
+            - generic [ref=f23e28]: Edit with
+          - button "Dismiss" [ref=f23e35] [cursor=pointer]
+    - generic [ref=f17e44]:
+      - button "Browse" [pressed] [ref=f17e45] [cursor=pointer]
+      - button "Comment" [ref=f17e49] [cursor=pointer]
+  - region

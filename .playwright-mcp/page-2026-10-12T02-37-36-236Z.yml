@@ -1,0 +1,23 @@
+- generic [active] [ref=f17e1]:
+  - link "Skip to main content" [ref=f17e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - main [ref=f17e39]:
+    - iframe [ref=f17e40]:
+      - generic [ref=f23e1]:
+        - generic [ref=f23e5]:
+          - generic [ref=f23e6]:
+            - generic [ref=f23e7]: Huellitas
+            - button "Saltar" [ref=f23e13]
+          - generic [ref=f23e14]:
+            - heading "Nunca olvides una vacuna" [level=1] [ref=f23e19]
+            - paragraph [ref=f23e20]: Te avisamos antes de cada vacuna, desparasitación o pastilla antipulgas.
+          - button "Siguiente" [ref=f23e25]
+        - complementary "Edit with Lovable" [ref=f23e26]:
+          - link "Edit with Lovable" [ref=f23e27] [cursor=pointer]:
+            - /url: https://lovable.dev/projects/lovp_0enpfbs92t8p19f583t7ts2mqc?utm_source=lovable-badge
+            - generic [ref=f23e28]: Edit with
+          - button "Dismiss" [ref=f23e35] [cursor=pointer]
+    - generic [ref=f17e44]:
+      - button "Browse" [pressed] [ref=f17e45] [cursor=pointer]
+      - button "Comment" [ref=f17e49] [cursor=pointer]
+  - region

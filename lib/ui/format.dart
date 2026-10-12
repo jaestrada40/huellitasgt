@@ -20,3 +20,11 @@ String speciesLabel(PetSpecies s) => switch (s) {
       PetSpecies.cat => 'Gato',
       PetSpecies.other => 'Otra mascota',
     };
+
+/// «domingo, 11 de octubre»
+String fmtLongDate(DateTime d) => DateFormat("EEEE, d 'de' MMMM", 'es_MX').format(d);
+
+/// «9 oct»
+String fmtShortDay(DateTime d) => DateFormat('d MMM', 'es_MX').format(d).replaceAll('.', '');
+
+String greeting(String? name) => (name == null || name.isEmpty) ? 'Hola' : 'Hola, $name';

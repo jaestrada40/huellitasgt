@@ -7,7 +7,6 @@ import '../../app/providers.dart';
 import '../../domain/age.dart';
 import '../../domain/enums.dart';
 import '../../domain/models.dart';
-import '../../domain/treatment_status.dart';
 import '../format.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -31,6 +30,7 @@ class ProfileScreen extends ConsumerWidget {
     if (ok != true) return;
     await ref.read(petRepoProvider).archive(pet.id);
     ref.read(selectedPetIdProvider.notifier).select(null);
+    ref.read(homeFilterProvider.notifier).select(null);
     await ref.read(reminderCoordinatorProvider).sync();
     if (context.mounted) context.go('/pets');
   }
@@ -50,123 +50,175 @@ class ProfileScreen extends ConsumerWidget {
     final weights = ref.watch(weightsForPetProvider(petId)).asData?.value ?? const <WeightEntry>[];
     final lastWeight = weights.firstOrNull;
 
-    HealthEvent? lastFor(Treatment t) => events.where((e) => e.treatmentId == t.id).firstOrNull;
+    DateTime? nextVaccine;
+    for (final t in treatments.where((t) => t.type == EventType.vaccine)) {
+      if (nextVaccine == null || t.nextDueDate.isBefore(nextVaccine)) nextVaccine = t.nextDueDate;
+    }
+    DateTime? lastOf(EventType type) =>
+        events.where((e) => e.type == type).map((e) => e.occurredAt).fold<DateTime?>(null, (a, b) => a == null || b.isAfter(a) ? b : a);
+
+    final rows = <(IconData, String, String, VoidCallback?)>[
+      if (pet.birthDate != null)
+        (Icons.cake_outlined, 'Nacimiento', '${fmtDay(pet.birthDate!)} · ${ageLong(pet.birthDate!, now)}', null),
+      (Icons.monitor_weight_outlined, 'Peso', lastWeight == null ? 'Registrar' : '${lastWeight.kg.toStringAsFixed(1)} kg',
+          () => context.push('/pets/${pet.id}/weight')),
+      if (pet.microchip != null)
+        (Icons.memory_outlined, 'Microchip', pet.microchip!, () => Clipboard.setData(ClipboardData(text: pet.microchip!))),
+      if (pet.sex != null) (Icons.pets_outlined, 'Sexo', pet.sex == PetSex.male ? 'Macho' : 'Hembra', null),
+      if (pet.neutered) (Icons.check_circle_outline, 'Esterilizado', 'Sí', null),
+      if (pet.allergiesNotes != null) (Icons.warning_amber_rounded, 'Alergias', pet.allergiesNotes!, null),
+      if (pet.vetName != null) (Icons.medical_services_outlined, 'Veterinario', pet.vetName!, null),
+      if (pet.vetClinic != null) (Icons.local_hospital_outlined, 'Clínica', pet.vetClinic!, null),
+      if (pet.vetPhone != null) (Icons.phone_outlined, 'Teléfono', pet.vetPhone!, null),
+    ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(pet.name),
-        actions: [
-          IconButton(icon: const Icon(Icons.edit), onPressed: () => context.push('/pets/${pet.id}/edit')),
-        ],
-      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         children: [
-          Center(child: PetAvatar(pet: pet, size: 96)),
-          const SizedBox(height: 12),
-          Center(child: Text(pet.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700))),
-          Center(
-            child: Text(
-              [
-                pet.breed ?? speciesLabel(pet.species),
-                if (pet.sex != null) (pet.sex == PetSex.male ? 'Macho' : 'Hembra'),
-                if (pet.neutered) 'Esterilizado',
-              ].join(' • '),
-              style: const TextStyle(color: AppColors.inkSoft),
+          Stack(children: [
+            PetPhoto(pet: pet, height: 300),
+            Positioned(
+              left: 16,
+              right: 16,
+              top: MediaQuery.of(context).padding.top + 8,
+              child: Row(children: [
+                RoundIconButton(icon: Icons.chevron_left_rounded, tooltip: 'Atrás', onTap: () => context.pop()),
+                const Spacer(),
+                Material(
+                  color: Colors.white,
+                  shape: const StadiumBorder(),
+                  elevation: 2,
+                  child: InkWell(
+                    customBorder: const StadiumBorder(),
+                    onTap: () => context.push('/pets/${pet.id}/edit'),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.edit_outlined, size: 16, color: AppColors.ink),
+                        SizedBox(width: 6),
+                        Text('Editar', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink)),
+                      ]),
+                    ),
+                  ),
+                ),
+              ]),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(children: [
-            Expanded(
-              child: AppCard(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('Edad', style: TextStyle(color: AppColors.inkSoft)),
-                  Text(pet.birthDate == null ? '-' : ageLabel(pet.birthDate!, now),
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
-                ]),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppCard(
-                onTap: () => context.push('/pets/${pet.id}/weight'),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('Peso', style: TextStyle(color: AppColors.inkSoft)),
-                  Text(lastWeight == null ? 'Registrar' : '${lastWeight.kg.toStringAsFixed(1)} kg',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
-                ]),
+            Container(
+              margin: const EdgeInsets.only(top: 272),
+              height: 28,
+              decoration: const BoxDecoration(
+                color: AppColors.canvas,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
             ),
           ]),
-          if (pet.microchip != null)
-            AppCard(
-              child: Row(children: [
-                const Icon(Icons.tag, color: AppColors.primary),
-                const SizedBox(width: 12),
-                Expanded(child: Text('Microchip ${pet.microchip}')),
-                IconButton(
-                  icon: const Icon(Icons.copy),
-                  onPressed: () => Clipboard.setData(ClipboardData(text: pet.microchip!)),
-                ),
-              ]),
-            ),
-          const SectionHeader('Estatus de protección'),
-          if (treatments.isEmpty)
-            const AppCard(child: Text('Aún no hay vacunas ni tratamientos con repetición.')),
-          for (final t in treatments)
-            AppCard(
-              child: Row(children: [
-                Icon(iconForType(t.type), color: AppColors.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(t.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    Text(
-                      lastFor(t) == null ? t.type.label : 'Última: ${fmtDay(lastFor(t)!.occurredAt)}',
-                      style: const TextStyle(color: AppColors.inkSoft),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(pet.name, style: AppText.h1),
+              Text('${speciesLabel(pet.species)}${pet.breed == null ? '' : ' · ${pet.breed}'}',
+                  style: const TextStyle(fontSize: 16, color: AppColors.inkSoft)),
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                child: Row(children: [
+                  _StatCard(type: EventType.vaccine, label: 'Próxima vacuna', date: nextVaccine),
+                  const SizedBox(width: 12),
+                  _StatCard(type: EventType.deworming, label: 'Últ. desparasitación', date: lastOf(EventType.deworming)),
+                  const SizedBox(width: 12),
+                  _StatCard(type: EventType.fleaTick, label: 'Últ. antipulgas', date: lastOf(EventType.fleaTick)),
+                ]),
+              ),
+              const SizedBox(height: 12),
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Column(children: [
+                  for (var i = 0; i < rows.length; i++) ...[
+                    if (i > 0) const Divider(),
+                    InkWell(
+                      onTap: rows[i].$4,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: Row(children: [
+                          Icon(rows[i].$1, color: AppColors.primary, size: 22),
+                          const SizedBox(width: 12),
+                          Text(rows[i].$2, style: const TextStyle(fontSize: 16, color: AppColors.inkSoft)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(rows[i].$3,
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                          ),
+                        ]),
+                      ),
                     ),
+                  ],
+                ]),
+              ),
+              const SectionHeader('Registros recientes'),
+              if (events.isEmpty) const AppCard(child: Text('Aún no hay registros.', style: AppText.body)),
+              for (final e in events.take(4))
+                AppCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  onTap: () => context.push('/events/${e.id}'),
+                  child: Row(children: [
+                    TypeIcon(e.type, size: 40),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(e.title, style: AppText.cardTitle),
+                        Text(fmtDay(e.occurredAt), style: const TextStyle(fontSize: 13, color: AppColors.inkSoft)),
+                      ]),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppColors.inkSoft),
                   ]),
                 ),
-                StatusChip.forDue(dueStatus(t.nextDueDate, now), dueLabel(t.nextDueDate, now)),
-              ]),
-            ),
-          if (pet.allergiesNotes != null) ...[
-            const SectionHeader('Alergias y condiciones'),
-            AppCard(child: Text(pet.allergiesNotes!)),
-          ],
-          if (pet.vetName != null || pet.vetClinic != null || pet.vetPhone != null) ...[
-            const SectionHeader('Veterinario'),
-            AppCard(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                if (pet.vetName != null) Text(pet.vetName!),
-                if (pet.vetClinic != null) Text(pet.vetClinic!, style: const TextStyle(color: AppColors.inkSoft)),
-                if (pet.vetPhone != null) Text(pet.vetPhone!, style: const TextStyle(color: AppColors.inkSoft)),
-              ]),
-            ),
-          ],
-          const SizedBox(height: 8),
-          FilledButton.icon(
-            onPressed: () {
-              ref.read(selectedPetIdProvider.notifier).select(pet.id);
-              context.go('/history');
-            },
-            icon: const Icon(Icons.history_edu),
-            label: const Text('Ver historial completo'),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => context.push('/pets/${pet.id}/carnet'),
-            icon: const Icon(Icons.badge),
-            label: const Text('Carnet de vacunación'),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppColors.coral),
-            onPressed: () => _archive(context, ref, pet),
-            child: const Text('Archivar mascota'),
+              const SizedBox(height: 4),
+              AppCard(
+                onTap: () => context.push('/pets/${pet.id}/carnet'),
+                child: const Row(children: [
+                  Icon(Icons.badge_outlined, color: AppColors.primary),
+                  SizedBox(width: 12),
+                  Expanded(child: Text('Carnet de vacunación', style: AppText.cardTitle)),
+                  Icon(Icons.chevron_right_rounded, color: AppColors.inkSoft),
+                ]),
+              ),
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(foregroundColor: AppColors.coral),
+                  onPressed: () => _archive(context, ref, pet),
+                  child: const Text('Archivar mascota'),
+                ),
+              ),
+            ]),
           ),
         ],
       ),
     );
   }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.type, required this.label, required this.date});
+  final EventType type;
+  final String label;
+  final DateTime? date;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: 144,
+        child: AppCard(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            TypeIcon(type, size: 36),
+            const SizedBox(height: 8),
+            Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppColors.inkSoft)),
+            Text(date == null ? '—' : fmtDay(date!),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink)),
+          ]),
+        ),
+      );
 }

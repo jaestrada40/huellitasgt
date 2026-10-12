@@ -14,10 +14,9 @@ String _days(int n) => '$n ${n == 1 ? 'día' : 'días'}';
 
 String dueLabel(DateTime nextDue, DateTime today) {
   final days = daysUntil(nextDue, today);
-  if (days < 0) return 'Atrasada · hace ${_days(-days)}';
+  if (days < 0) return 'Atrasada ${_days(-days)}';
   if (days == 0) return 'Hoy';
-  if (days <= 7) return 'Vence en ${_days(days)}';
-  return 'En ${_days(days)}';
+  return 'Vence en ${_days(days)}';
 }
 
 /// Porcentaje de tratamientos activos que no están atrasados.

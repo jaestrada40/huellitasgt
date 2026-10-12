@@ -12,6 +12,7 @@ void main() {
     expect(p.reminderMinute, 0);
     expect(p.reminderDaysBefore, 3);
     expect(p.lastBackupAt, isNull);
+    expect(p.userName, isNull);
   });
 
   test('guarda y lee', () async {
@@ -25,5 +26,13 @@ void main() {
     expect(p.reminderMinute, 30);
     expect(p.reminderDaysBefore, 7);
     expect(p.lastBackupAt, DateTime(2024, 10, 2, 12));
+  });
+
+  test('nombre de la persona: se guarda sin espacios sobrantes y se puede borrar', () async {
+    final p = await AppPrefs.load();
+    await p.setUserName('  Javier  ');
+    expect(p.userName, 'Javier');
+    await p.setUserName('   ');
+    expect(p.userName, isNull);
   });
 }

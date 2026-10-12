@@ -123,7 +123,7 @@ class EventDetailScreen extends ConsumerWidget {
               ),
               if (d.treatment != null && d.treatment!.active)
                 AppCard(
-                  stripe: AppColors.primary,
+                  color: AppColors.mint,
                   child: Text('Próxima dosis: ${fmtDay(d.treatment!.nextDueDate)}'),
                 ),
               if (d.attachments.isNotEmpty) ...[

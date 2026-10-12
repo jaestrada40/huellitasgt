@@ -222,7 +222,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
               if (next != null) ...[
                 const SizedBox(height: 12),
                 AppCard(
-                  stripe: AppColors.primary,
+                  color: AppColors.mint,
                   child: Text('Próxima dosis sugerida: ${fmtDay(next)}'),
                 ),
                 SwitchListTile(

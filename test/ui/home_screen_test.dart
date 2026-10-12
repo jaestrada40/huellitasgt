@@ -16,11 +16,14 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('mascota sin tratamientos: todo bajo control y sin recordatorios', (tester) async {
+  testWidgets('mascota sin tratamientos: saludo con nombre y sin recordatorios', (tester) async {
     final env = await createEnv();
     await runDb(tester, () => DriftPetRepository(env.db).save(samplePet()));
+    await env.prefs.setUserName('Javier');
     await pumpScreen(tester, env, const HomeScreen());
-    expect(find.text('Todo bajo control'), findsOneWidget);
+    expect(find.text('Hola, Javier'), findsOneWidget);
+    expect(find.text('jueves, 24 de octubre'), findsOneWidget);
+    expect(find.text('Todas'), findsOneWidget);
     expect(find.textContaining('Aún no hay recordatorios'), findsOneWidget);
     await unmount(tester);
   });
@@ -34,8 +37,9 @@ void main() {
     });
     await pumpScreen(tester, env, const HomeScreen());
 
-    expect(find.text('Atrasada · hace 3 días'), findsOneWidget);
-    expect(find.text('1 tarea atrasada'), findsOneWidget);
+    expect(find.text('Atrasada 3 días'), findsOneWidget);
+    expect(find.text('1 pendiente'), findsOneWidget);
+    expect(find.text('Toby · 21 oct 2024'), findsOneWidget);
 
     await tester.tap(find.text('Marcar como hecha').first);
     await tester.pumpAndSettle();

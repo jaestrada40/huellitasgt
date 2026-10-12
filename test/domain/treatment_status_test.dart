@@ -25,12 +25,12 @@ void main() {
   });
 
   test('dueLabel', () {
-    expect(dueLabel(DateTime.utc(2024, 10, 21), today), 'Atrasada · hace 3 días');
-    expect(dueLabel(DateTime.utc(2024, 10, 23), today), 'Atrasada · hace 1 día');
+    expect(dueLabel(DateTime.utc(2024, 10, 21), today), 'Atrasada 3 días');
+    expect(dueLabel(DateTime.utc(2024, 10, 23), today), 'Atrasada 1 día');
     expect(dueLabel(DateTime.utc(2024, 10, 24), today), 'Hoy');
     expect(dueLabel(DateTime.utc(2024, 10, 25), today), 'Vence en 1 día');
     expect(dueLabel(DateTime.utc(2024, 10, 29), today), 'Vence en 5 días');
-    expect(dueLabel(DateTime.utc(2024, 11, 5), today), 'En 12 días');
+    expect(dueLabel(DateTime.utc(2024, 11, 5), today), 'Vence en 12 días');
   });
 
   group('percentUpToDate', () {

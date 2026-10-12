@@ -11,6 +11,14 @@ void main() {
     expect(ageLabel(DateTime.utc(2024, 10, 24), today), '0m');
     expect(ageLabel(DateTime.utc(2030, 1, 1), today), '0m');
   });
+  test('ageLong como en el diseño', () {
+    expect(ageLong(DateTime.utc(2021, 6, 12), today), '3 años');
+    expect(ageLong(DateTime.utc(2023, 10, 24), today), '1 año');
+    expect(ageLong(DateTime.utc(2024, 3, 1), today), '7 meses');
+    expect(ageLong(DateTime.utc(2024, 9, 20), today), '1 mes');
+    expect(ageLong(DateTime.utc(2024, 10, 24), today), 'Recién nacido');
+    expect(ageLong(DateTime.utc(2030, 1, 1), today), 'Recién nacido');
+  });
   test('normalizeName ignora mayúsculas y espacios', () {
     expect(normalizeName('  Antirrábica '), normalizeName('antirrábica'));
     expect(normalizeName('Drontal   Plus'), 'drontal plus');

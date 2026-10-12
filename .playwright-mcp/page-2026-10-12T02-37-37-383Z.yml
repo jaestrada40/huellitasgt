@@ -1,0 +1,33 @@
+- generic [ref=f17e1]:
+  - link "Skip to main content" [ref=f17e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - main [ref=f17e39]:
+    - iframe [active] [ref=f17e40]:
+      - generic [active] [ref=f23e1]:
+        - generic [ref=f23e5]:
+          - generic [ref=f23e38]:
+            - generic [ref=f23e39]: Agrega tu primera mascota
+            - generic [ref=f23e41] [cursor=pointer]: Foto
+            - generic [ref=f23e46]:
+              - button "🐶 Perro" [ref=f23e47]
+              - button "🐱 Gato" [ref=f23e48]
+            - generic [ref=f23e49]:
+              - textbox "Nombre" [ref=f23e50]
+              - textbox "Raza" [ref=f23e51]
+              - generic [ref=f23e52]:
+                - generic [ref=f23e53]: Fecha de nacimiento
+                - textbox "Fecha de nacimiento" [ref=f23e54]: 2025-10-12
+              - generic [ref=f23e55]:
+                - textbox "Peso (kg)" [ref=f23e56]
+                - textbox "Microchip" [ref=f23e57]
+            - button "Guardar" [ref=f23e58]
+          - button "Usar mascotas de ejemplo" [ref=f23e59]
+        - complementary "Edit with Lovable" [ref=f23e26]:
+          - link "Edit with Lovable" [ref=f23e27] [cursor=pointer]:
+            - /url: https://lovable.dev/projects/lovp_0enpfbs92t8p19f583t7ts2mqc?utm_source=lovable-badge
+            - generic [ref=f23e28]: Edit with
+          - button "Dismiss" [ref=f23e35] [cursor=pointer]
+    - generic [ref=f17e44]:
+      - button "Browse" [pressed] [ref=f17e45] [cursor=pointer]
+      - button "Comment" [ref=f17e49] [cursor=pointer]
+  - region

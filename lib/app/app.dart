@@ -9,9 +9,8 @@ import 'providers.dart';
 import 'router.dart';
 
 class HuellitasApp extends ConsumerStatefulWidget {
-  const HuellitasApp({super.key, required this.initialLocation, this.bundledFont = true});
+  const HuellitasApp({super.key, required this.initialLocation});
   final String initialLocation;
-  final bool bundledFont;
 
   @override
   ConsumerState<HuellitasApp> createState() => _HuellitasAppState();
@@ -31,7 +30,7 @@ class _HuellitasAppState extends ConsumerState<HuellitasApp> {
   Widget build(BuildContext context) => MaterialApp.router(
         title: 'Huellitas',
         debugShowCheckedModeBanner: false,
-        theme: buildTheme(bundledFont: widget.bundledFont),
+        theme: buildTheme(),
         routerConfig: _router,
         builder: (context, child) => LockGate(child: child ?? const SizedBox.shrink()),
         locale: const Locale('es', 'MX'),

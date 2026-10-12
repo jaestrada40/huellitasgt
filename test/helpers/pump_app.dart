@@ -94,7 +94,7 @@ Future<void> pumpScreen(WidgetTester tester, TestEnv env, Widget screen) async {
     overrides: env.overrides,
     child: MaterialApp.router(
       routerConfig: router,
-      theme: buildTheme(bundledFont: false),
+      theme: buildTheme(),
       locale: const Locale('es', 'MX'),
       supportedLocales: const [Locale('es', 'MX')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,

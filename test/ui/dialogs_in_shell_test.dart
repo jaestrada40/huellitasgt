@@ -13,7 +13,7 @@ void main() {
     final env = await createEnv();
     await tester.pumpWidget(ProviderScope(
       overrides: env.overrides,
-      child: const HuellitasApp(initialLocation: '/settings', bundledFont: false),
+      child: const HuellitasApp(initialLocation: '/settings'),
     ));
     await tester.pumpAndSettle();
 
@@ -38,7 +38,7 @@ void main() {
     final env = await createEnv();
     await tester.pumpWidget(ProviderScope(
       overrides: env.overrides,
-      child: const HuellitasApp(initialLocation: '/settings', bundledFont: false),
+      child: const HuellitasApp(initialLocation: '/settings'),
     ));
     await tester.pumpAndSettle();
 

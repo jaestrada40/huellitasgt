@@ -83,6 +83,15 @@ class SelectedPetId extends Notifier<String?> {
 
 final selectedPetIdProvider = NotifierProvider<SelectedPetId, String?>(SelectedPetId.new);
 
+/// Filtro de Inicio: `null` = «Todas» las mascotas.
+class HomeFilter extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void select(String? petId) => state = petId;
+}
+
+final homeFilterProvider = NotifierProvider<HomeFilter, String?>(HomeFilter.new);
+
 /// La mascota seleccionada, o la primera si no hay selección válida.
 final currentPetProvider = Provider<Pet?>((ref) {
   final pets = ref.watch(petsProvider).asData?.value ?? const <Pet>[];

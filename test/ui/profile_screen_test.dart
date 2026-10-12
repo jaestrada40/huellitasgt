@@ -24,9 +24,10 @@ void main() {
   testWidgets('muestra datos de la mascota y el estado de protección', (tester) async {
     await setup(tester);
     expect(find.text('Toby'), findsWidgets);
-    expect(find.text('3a 4m'), findsOneWidget);
-    expect(find.text('Antirrábica'), findsOneWidget);
-    expect(find.text('Atrasada · hace 3 días'), findsOneWidget);
+    expect(find.text('12 jun 2021 · 3 años'), findsOneWidget);
+    expect(find.text('Perro · Golden Retriever'), findsOneWidget);
+    expect(find.text('Próxima vacuna'), findsOneWidget);
+    expect(find.text('21 oct 2024'), findsOneWidget);
     expect(find.text('Dra. Carmen Morales'), findsOneWidget);
     await unmount(tester);
   });

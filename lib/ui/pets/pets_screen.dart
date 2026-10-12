@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../domain/age.dart';
-import '../../domain/dates.dart';
+import '../../domain/home_logic.dart';
 import '../../domain/models.dart';
 import '../format.dart';
 import '../theme.dart';
@@ -20,66 +20,71 @@ class PetsScreen extends ConsumerWidget {
     final now = ref.watch(clockProvider)();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mascotas')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Chip(
-              avatar: const Icon(Icons.lock, size: 16, color: AppColors.primary),
-              label: Text('${pets.length} ${pets.length == 1 ? 'compañero' : 'compañeros'} · 100% local'),
-            ),
-          ),
-          const SizedBox(height: 8),
-          for (final pet in pets)
-            _PetCard(
-              pet: pet,
-              overdue: treatments.where((t) => t.petId == pet.id && daysUntil(t.nextDueDate, now) < 0).length,
-              now: now,
-            ),
-          AppCard(
-            onTap: () => context.push('/pets/new'),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [Icon(Icons.add, color: AppColors.primary), SizedBox(width: 8), Text('Agregar mascota')],
-            ),
-          ),
-        ],
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          children: [
+            Row(children: [
+              const Expanded(child: Text('Mascotas', style: AppText.h1)),
+              Material(
+                color: AppColors.mint,
+                shape: const CircleBorder(),
+                child: IconButton(
+                  key: const Key('addPetButton'),
+                  tooltip: 'Agregar mascota',
+                  onPressed: () => context.push('/pets/new'),
+                  icon: const Icon(Icons.add_rounded, color: AppColors.mintInk),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 16),
+            for (final pet in pets)
+              _PetCard(
+                pet: pet,
+                pending: homeSections(treatments.where((t) => t.petId == pet.id), now).pending.length,
+                now: now,
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _PetCard extends ConsumerWidget {
-  const _PetCard({required this.pet, required this.overdue, required this.now});
+  const _PetCard({required this.pet, required this.pending, required this.now});
   final Pet pet;
-  final int overdue;
+  final int pending;
   final DateTime now;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = [
-      pet.breed ?? speciesLabel(pet.species),
-      if (pet.birthDate != null) ageLabel(pet.birthDate!, now),
-    ].join(' • ');
+      speciesLabel(pet.species),
+      ?pet.breed,
+      if (pet.birthDate != null) ageLong(pet.birthDate!, now),
+    ].join(' · ');
     return AppCard(
       onTap: () {
         ref.read(selectedPetIdProvider.notifier).select(pet.id);
         context.push('/pets/${pet.id}');
       },
       child: Row(children: [
-        PetAvatar(pet: pet, size: 56),
-        const SizedBox(width: 12),
+        PetAvatar(pet: pet, size: 64),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(pet.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-            Text(detail, style: const TextStyle(color: AppColors.inkSoft)),
+            Text(pet.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+            const SizedBox(height: 2),
+            Text(detail, style: AppText.body),
+            const SizedBox(height: 8),
+            pending > 0
+                ? StatusChip('$pending ${pending == 1 ? 'pendiente' : 'pendientes'}', StatusKind.soon)
+                : const StatusChip('Al día', StatusKind.ok),
           ]),
         ),
-        overdue > 0
-            ? StatusChip('$overdue ${overdue == 1 ? 'atrasada' : 'atrasadas'}', StatusKind.overdue)
-            : const StatusChip('Al día', StatusKind.ok),
+        const Icon(Icons.chevron_right_rounded, color: AppColors.inkSoft),
       ]),
     );
   }

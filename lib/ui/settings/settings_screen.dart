@@ -144,7 +144,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           AppCard(
-            stripe: AppColors.primary,
+            color: AppColors.mint,
             child: const Row(children: [
               Icon(Icons.phonelink_lock, color: AppColors.primary),
               SizedBox(width: 12),

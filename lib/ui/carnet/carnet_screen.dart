@@ -37,7 +37,7 @@ class CarnetScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           AppCard(
-            stripe: AppColors.primary,
+            color: AppColors.mint,
             child: const Row(children: [
               Icon(Icons.info_outline, color: AppColors.primary),
               SizedBox(width: 12),
