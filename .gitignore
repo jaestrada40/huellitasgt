@@ -1,1 +1,52 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IDE
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Flutter / Dart
+**/doc/api/
+.dart_tool/
+.flutter-plugins-dependencies
+build/
+.pub-cache/
+.pub/
+coverage/
+
+# Android
+android/.gradle/
+android/captures/
+android/local.properties
+android/gradle-wrapper.jar
+android/key.properties
+*.jks
+*.keystore
+**/android/**/GeneratedPluginRegistrant.java
+
+# iOS / macOS
+ios/Flutter/ephemeral/
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.*
+**/xcuserdata/
+*.xcuserstate
+
+# Local tooling
 .superpowers/
+.claude/settings.local.json

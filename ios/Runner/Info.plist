@@ -8,6 +8,14 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Huellitas</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Huellitas usa la cámara para fotografiar recetas y carnets de vacunación de tu mascota.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Huellitas necesita acceder a tus fotos para adjuntar recetas y la foto de tu mascota.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Huellitas usa Face ID para proteger el historial de tus mascotas.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
