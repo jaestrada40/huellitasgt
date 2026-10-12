@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../domain/enums.dart';
+import '../ui/events/event_detail_screen.dart';
 import '../ui/events/event_form_screen.dart';
 import '../ui/home/home_screen.dart';
 import '../ui/onboarding/onboarding_screen.dart';
@@ -55,6 +56,11 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
               initialType: type == null ? null : EventType.values.byName(type),
             );
           },
+        ),
+        GoRoute(
+          path: '/events/:id',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => EventDetailScreen(eventId: s.pathParameters['id']!),
         ),
         GoRoute(
           path: '/pets/new',
