@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../domain/enums.dart';
+import '../ui/carnet/carnet_screen.dart';
 import '../ui/events/event_detail_screen.dart';
 import '../ui/events/event_form_screen.dart';
 import '../ui/history/history_screen.dart';
@@ -79,6 +80,11 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
           path: '/pets/:id',
           parentNavigatorKey: rootNavigatorKey,
           builder: (_, s) => ProfileScreen(petId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/pets/:id/carnet',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => CarnetScreen(petId: s.pathParameters['id']!),
         ),
         GoRoute(
           path: '/pets/:id/weight',
