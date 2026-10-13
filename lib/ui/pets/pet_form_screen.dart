@@ -113,6 +113,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
           _photo = rel;
           _focus = Alignment.center; // foto nueva: vuelve a empezar centrada
         });
+        await _adjustPhoto(); // lo natural al elegir una foto es encuadrarla
       }
     } on AttachmentException catch (e) {
       if (mounted) _snack(e.message);
@@ -292,35 +293,64 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
               const SizedBox(height: 12),
               Center(
                 child: GestureDetector(
-                  onTap: () => _pickPhoto(ImageSource.gallery),
-                  child: Container(
-                    width: 112,
-                    height: 112,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: const BoxDecoration(
-                      color: AppColors.mint,
-                      shape: BoxShape.circle,
-                    ),
-                    child: hasPhoto
-                        ? Image.file(photoFile, fit: BoxFit.cover, alignment: _focus)
-                        : const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.photo_camera_outlined,
-                                color: AppColors.mintInk,
-                                size: 30,
+                  key: const Key('petPhotoCircle'),
+                  onTap: () => hasPhoto
+                      ? _adjustPhoto()
+                      : _pickPhoto(ImageSource.gallery),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 112,
+                        height: 112,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(
+                          color: AppColors.mint,
+                          shape: BoxShape.circle,
+                        ),
+                        child: hasPhoto
+                            ? Image.file(
+                                photoFile,
+                                fit: BoxFit.cover,
+                                alignment: _focus,
+                              )
+                            : const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.photo_camera_outlined,
+                                    color: AppColors.mintInk,
+                                    size: 30,
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Foto',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.mintInk,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Foto',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.mintInk,
-                                ),
-                              ),
-                            ],
+                      ),
+                      if (hasPhoto)
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.open_with_rounded,
+                              size: 16,
+                              color: AppColors.onPrimary,
+                            ),
                           ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -339,7 +369,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                     TextButton(
                       key: const Key('adjustPhotoButton'),
                       onPressed: _adjustPhoto,
-                      child: const Text('Ajustar foto'),
+                      child: const Text('Mover / centrar foto'),
                     ),
                 ],
               ),
@@ -428,7 +458,8 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                         decimal: true,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Peso (${ref.watch(weightUnitProvider).symbol})',
+                        hintText:
+                            'Peso (${ref.watch(weightUnitProvider).symbol})',
                       ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
