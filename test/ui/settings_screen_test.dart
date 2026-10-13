@@ -22,7 +22,7 @@ void main() {
     expect(find.text('Respaldo'), findsOneWidget);
     expect(find.text('Exportar historial'), findsOneWidget);
     expect(find.text('Ver bienvenida otra vez'), findsOneWidget);
-    expect(find.text('Huellitas 1.0 · Hecho con cariño en México'), findsOneWidget);
+    expect(find.text('Huellitas 1.0 · Hecho con cariño en Guatemala'), findsOneWidget);
     expect(find.text('Aún no has hecho un respaldo'), findsOneWidget);
     expect(find.textContaining('Compartir con familia'), findsNothing);
     expect(find.textContaining('WhatsApp'), findsNothing);
