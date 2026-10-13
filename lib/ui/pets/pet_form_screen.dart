@@ -235,8 +235,8 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
-              SizedBox(
-                height: 48,
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 48),
                 child: Row(
                   children: [
                     if (widget.first)

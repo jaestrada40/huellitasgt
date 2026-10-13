@@ -202,7 +202,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             const Center(
-              child: Text('Huellitas 1.0 · Hecho con cariño en México', style: TextStyle(fontSize: 13, color: AppColors.inkSoft)),
+              child: Text('Huellitas 1.0 · Hecho con cariño en Guatemala', style: TextStyle(fontSize: 13, color: AppColors.inkSoft)),
             ),
           ],
         ),
