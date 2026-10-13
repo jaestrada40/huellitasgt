@@ -23,6 +23,13 @@ abstract class EventRepository {
   Future<HealthEvent?> get(String id);
   Future<List<Attachment>> attachmentsFor(String eventId);
   Future<void> save(HealthEvent e, List<Attachment> attachments);
+
+  /// Agrega un documento a un registro ya guardado, sin tocar el resto.
+  Future<void> addAttachment(Attachment a);
+
+  /// Quita un documento y devuelve su ruta relativa (para borrar el archivo),
+  /// o `null` si ya no existía.
+  Future<String?> removeAttachment(String id);
   Future<List<String>> delete(String id);
 }
 

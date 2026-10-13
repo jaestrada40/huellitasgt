@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:uuid/uuid.dart';
 
 import '../data/database.dart';
@@ -128,6 +129,8 @@ final shareFileProvider = Provider<ShareFile>((ref) => shareFileWithSystem);
 
 typedef BiometricAuth = Future<bool> Function();
 typedef PickBackupFile = Future<File?> Function();
+typedef PickPhoto = Future<File?> Function(ImageSource source);
 
 final biometricAuthProvider = Provider<BiometricAuth>((ref) => authenticateWithBiometrics);
 final pickBackupFileProvider = Provider<PickBackupFile>((ref) => pickBackupZip);
+final pickPhotoProvider = Provider<PickPhoto>((ref) => pickPhotoWithPicker);

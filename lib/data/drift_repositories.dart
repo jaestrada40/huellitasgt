@@ -112,6 +112,18 @@ class DriftEventRepository implements EventRepository {
       });
 
   @override
+  Future<void> addAttachment(Attachment a) =>
+      _db.into(_db.attachments).insert(attachmentToCompanion(a));
+
+  @override
+  Future<String?> removeAttachment(String id) => _db.transaction(() async {
+        final row = await (_db.select(_db.attachments)..where((t) => t.id.equals(id))).getSingleOrNull();
+        if (row == null) return null;
+        await (_db.delete(_db.attachments)..where((t) => t.id.equals(id))).go();
+        return row.relativePath;
+      });
+
+  @override
   Future<List<String>> delete(String id) => _db.transaction(() async {
         final rows = await (_db.select(_db.attachments)..where((t) => t.eventId.equals(id))).get();
         await (_db.delete(_db.attachments)..where((t) => t.eventId.equals(id))).go();

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:image_picker/image_picker.dart' show ImageSource;
+
 import '../../app/providers.dart';
 import '../../domain/enums.dart';
 import '../../domain/models.dart';
+import '../../services/attachment_store.dart' show AttachmentException;
 import '../../domain/treatment_status.dart';
 import '../format.dart';
 import '../theme.dart';
@@ -67,10 +70,88 @@ class EventDetailScreen extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
-        child: InteractiveViewer(child: Image.file(file)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Flexible(child: InteractiveViewer(child: Image.file(file))),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            TextButton(
+              key: const Key('deletePhotoButton'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.coral),
+              onPressed: () async {
+                final ok = await _confirmDeletePhoto(dialogContext);
+                if (ok != true) return;
+                await _removePhoto(ref, a);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+              },
+              child: const Text('Eliminar foto'),
+            ),
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cerrar')),
+          ]),
+        ]),
       ),
     );
   }
+
+  Future<bool?> _confirmDeletePhoto(BuildContext context) => showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('¿Eliminar esta foto?'),
+          content: const Text('Se borrará de tu teléfono. Esta acción no se puede deshacer.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+            FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Eliminar')),
+          ],
+        ),
+      );
+
+  Future<void> _removePhoto(WidgetRef ref, Attachment a) async {
+    final path = await ref.read(eventRepoProvider).removeAttachment(a.id);
+    if (path != null) await ref.read(attachmentStoreProvider).delete(path);
+    ref.invalidate(eventDetailProvider(eventId));
+  }
+
+  Future<void> _addPhoto(BuildContext context, WidgetRef ref, ImageSource source) async {
+    final picked = await ref.read(pickPhotoProvider)(source);
+    if (picked == null) return;
+    try {
+      final rel = await ref.read(attachmentStoreProvider).importImage(picked);
+      await ref.read(eventRepoProvider).addAttachment(Attachment(
+            id: ref.read(idGeneratorProvider)(),
+            eventId: eventId,
+            relativePath: rel,
+            kind: AttachmentKind.image,
+            label: 'Comprobante',
+          ));
+      ref.invalidate(eventDetailProvider(eventId));
+    } on AttachmentException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    }
+  }
+
+  void _chooseSource(BuildContext context, WidgetRef ref) => showModalBottomSheet<void>(
+        context: context,
+        builder: (sheetContext) => SafeArea(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Cámara'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _addPhoto(context, ref, ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Galería'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _addPhoto(context, ref, ImageSource.gallery);
+              },
+            ),
+          ]),
+        ),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -192,6 +273,13 @@ class EventDetailScreen extends ConsumerWidget {
                         ),
                       ),
                   ]),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  key: const Key('addDocumentPhoto'),
+                  onPressed: () => _chooseSource(context, ref),
+                  icon: const Icon(Icons.add_a_photo_outlined),
+                  label: const Text('Agregar foto'),
+                ),
                 const SizedBox(height: 16),
                 if (t != null)
                   FilledButton.icon(

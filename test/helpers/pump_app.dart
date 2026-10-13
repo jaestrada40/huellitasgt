@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:huellitas/app/providers.dart';
 import 'package:huellitas/data/database.dart';
 import 'package:huellitas/services/app_prefs.dart';
+import 'package:huellitas/services/attachment_store.dart';
 import 'package:huellitas/services/pin_store.dart';
 import 'package:huellitas/ui/theme.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -44,6 +45,7 @@ class TestEnv {
   final InMemorySecrets secrets;
   final List<String> shared = [];
   File? pickedBackup;
+  File? pickedPhoto;
   int _ids = 0;
 
   /// Agregar aquí los overrides de providers que se creen en tareas posteriores.
@@ -58,6 +60,15 @@ class TestEnv {
         shareFileProvider.overrideWithValue((path) async => shared.add(path)),
         biometricAuthProvider.overrideWithValue(() async => false),
         pickBackupFileProvider.overrideWithValue(() async => pickedBackup),
+        pickPhotoProvider.overrideWithValue((_) async => pickedPhoto),
+        // Sin la compresión nativa: copia el archivo tal cual.
+        attachmentStoreProvider.overrideWith((ref) => AttachmentStore(
+              root: docs,
+              newId: ref.watch(idGeneratorProvider),
+              compress: (source, target) async {
+                await source.copy(target);
+              },
+            )),
       ];
 }
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:local_auth/local_auth.dart';
 
 /// Único lugar con las APIs de local_auth y file_picker, que cambian entre
@@ -25,4 +26,10 @@ Future<File?> pickBackupZip() async {
   );
   final path = files.isEmpty ? null : files.first.path;
   return path == null ? null : File(path);
+}
+
+/// Cámara o galería. `null` si la persona cancela.
+Future<File?> pickPhotoWithPicker(ImageSource source) async {
+  final x = await ImagePicker().pickImage(source: source);
+  return x == null ? null : File(x.path);
 }
