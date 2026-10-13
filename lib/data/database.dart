@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.file(File file) : super(NativeDatabase.createInBackground(file));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -26,6 +26,9 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.addColumn(pets, pets.photoFocusX);
             await m.addColumn(pets, pets.photoFocusY);
+          }
+          if (from < 3) {
+            await m.addColumn(pets, pets.photoZoom);
           }
         },
       );

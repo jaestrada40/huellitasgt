@@ -35,6 +35,7 @@ Map<String, dynamic> backupToJson(
             'photoPath': p.photoPath,
             'photoFocusX': p.photoFocusX,
             'photoFocusY': p.photoFocusY,
+            'photoZoom': p.photoZoom,
             'allergiesNotes': p.allergiesNotes,
             'vetName': p.vetName,
             'vetClinic': p.vetClinic,
@@ -112,6 +113,7 @@ BackupData backupFromJson(Map<String, dynamic> j) {
           // Los respaldos anteriores no traen enfoque: foto centrada.
           photoFocusX: _doubleOrNull(m['photoFocusX']) ?? 0,
           photoFocusY: _doubleOrNull(m['photoFocusY']) ?? 0,
+          photoZoom: _doubleOrNull(m['photoZoom']) ?? 1,
           allergiesNotes: m['allergiesNotes'] as String?,
           vetName: m['vetName'] as String?,
           vetClinic: m['vetClinic'] as String?,

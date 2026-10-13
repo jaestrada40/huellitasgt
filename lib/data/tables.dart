@@ -16,6 +16,7 @@ class Pets extends Table {
   // Punto de enfoque de la foto, como Alignment (-1..1); 0,0 = centrada.
   RealColumn get photoFocusX => real().withDefault(const Constant(0))();
   RealColumn get photoFocusY => real().withDefault(const Constant(0))();
+  RealColumn get photoZoom => real().withDefault(const Constant(1))(); // 1 = sin zoom
   TextColumn get allergiesNotes => text().nullable()();
   TextColumn get vetName => text().nullable()();
   TextColumn get vetClinic => text().nullable()();

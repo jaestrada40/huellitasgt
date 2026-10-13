@@ -14,6 +14,7 @@ class Pet {
     this.photoPath,
     this.photoFocusX = 0,
     this.photoFocusY = 0,
+    this.photoZoom = 1,
     this.allergiesNotes,
     this.vetName,
     this.vetClinic,
@@ -33,6 +34,7 @@ class Pet {
   final String? photoPath; // ruta relativa
   final double photoFocusX; // Alignment -1..1; 0 = centrada
   final double photoFocusY;
+  final double photoZoom; // 1 = sin zoom
   final String? allergiesNotes;
   final String? vetName;
   final String? vetClinic;

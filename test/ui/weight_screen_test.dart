@@ -53,8 +53,6 @@ void main() {
     await pumpScreen(tester, env, const WeightScreen(petId: 'p1'));
     await tester.tap(find.text('Registrar peso'));
     await tester.pumpAndSettle();
-    expect(find.text('Peso en lb'), findsOneWidget);
-
     await tester.enterText(find.byKey(const Key('weightField')), '66');
     await tester.tap(find.text('Guardar peso'));
     await tester.pumpAndSettle();
@@ -62,6 +60,25 @@ void main() {
     final list = await runDb(tester, () => DriftWeightRepository(env.db).watchForPet('p1').first);
     expect(list.single.kg, closeTo(29.94, 0.01));
     expect(find.text('66.0 lb'), findsWidgets);
+    await unmount(tester);
+  });
+
+  testWidgets('el selector junto al campo cambia la unidad de toda la app', (tester) async {
+    final env = await createEnv();
+    await runDb(tester, () => DriftPetRepository(env.db).save(samplePet()));
+    await pumpScreen(tester, env, const WeightScreen(petId: 'p1'));
+    await tester.tap(find.text('Registrar peso'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('weightUnit_lb')));
+    await tester.pumpAndSettle();
+    expect(env.prefs.weightUnit, WeightUnit.lb);
+
+    await tester.enterText(find.byKey(const Key('weightField')), '66');
+    await tester.tap(find.text('Guardar peso'));
+    await tester.pumpAndSettle();
+    final list = await runDb(tester, () => DriftWeightRepository(env.db).watchForPet('p1').first);
+    expect(list.single.kg, closeTo(29.94, 0.01));
     await unmount(tester);
   });
 

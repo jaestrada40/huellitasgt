@@ -125,6 +125,18 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _photoZoomMeta = const VerificationMeta(
+    'photoZoom',
+  );
+  @override
+  late final GeneratedColumn<double> photoZoom = GeneratedColumn<double>(
+    'photo_zoom',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   static const VerificationMeta _allergiesNotesMeta = const VerificationMeta(
     'allergiesNotes',
   );
@@ -208,6 +220,7 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
     photoPath,
     photoFocusX,
     photoFocusY,
+    photoZoom,
     allergiesNotes,
     vetName,
     vetClinic,
@@ -286,6 +299,12 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
           data['photo_focus_y']!,
           _photoFocusYMeta,
         ),
+      );
+    }
+    if (data.containsKey('photo_zoom')) {
+      context.handle(
+        _photoZoomMeta,
+        photoZoom.isAcceptableOrUnknown(data['photo_zoom']!, _photoZoomMeta),
       );
     }
     if (data.containsKey('allergies_notes')) {
@@ -386,6 +405,10 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
         DriftSqlType.double,
         data['${effectivePrefix}photo_focus_y'],
       )!,
+      photoZoom: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}photo_zoom'],
+      )!,
       allergiesNotes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}allergies_notes'],
@@ -438,6 +461,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
   final String? photoPath;
   final double photoFocusX;
   final double photoFocusY;
+  final double photoZoom;
   final String? allergiesNotes;
   final String? vetName;
   final String? vetClinic;
@@ -456,6 +480,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     this.photoPath,
     required this.photoFocusX,
     required this.photoFocusY,
+    required this.photoZoom,
     this.allergiesNotes,
     this.vetName,
     this.vetClinic,
@@ -491,6 +516,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     }
     map['photo_focus_x'] = Variable<double>(photoFocusX);
     map['photo_focus_y'] = Variable<double>(photoFocusY);
+    map['photo_zoom'] = Variable<double>(photoZoom);
     if (!nullToAbsent || allergiesNotes != null) {
       map['allergies_notes'] = Variable<String>(allergiesNotes);
     }
@@ -529,6 +555,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           : Value(photoPath),
       photoFocusX: Value(photoFocusX),
       photoFocusY: Value(photoFocusY),
+      photoZoom: Value(photoZoom),
       allergiesNotes: allergiesNotes == null && nullToAbsent
           ? const Value.absent()
           : Value(allergiesNotes),
@@ -567,6 +594,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       photoPath: serializer.fromJson<String?>(json['photoPath']),
       photoFocusX: serializer.fromJson<double>(json['photoFocusX']),
       photoFocusY: serializer.fromJson<double>(json['photoFocusY']),
+      photoZoom: serializer.fromJson<double>(json['photoZoom']),
       allergiesNotes: serializer.fromJson<String?>(json['allergiesNotes']),
       vetName: serializer.fromJson<String?>(json['vetName']),
       vetClinic: serializer.fromJson<String?>(json['vetClinic']),
@@ -592,6 +620,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       'photoPath': serializer.toJson<String?>(photoPath),
       'photoFocusX': serializer.toJson<double>(photoFocusX),
       'photoFocusY': serializer.toJson<double>(photoFocusY),
+      'photoZoom': serializer.toJson<double>(photoZoom),
       'allergiesNotes': serializer.toJson<String?>(allergiesNotes),
       'vetName': serializer.toJson<String?>(vetName),
       'vetClinic': serializer.toJson<String?>(vetClinic),
@@ -613,6 +642,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     Value<String?> photoPath = const Value.absent(),
     double? photoFocusX,
     double? photoFocusY,
+    double? photoZoom,
     Value<String?> allergiesNotes = const Value.absent(),
     Value<String?> vetName = const Value.absent(),
     Value<String?> vetClinic = const Value.absent(),
@@ -631,6 +661,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     photoPath: photoPath.present ? photoPath.value : this.photoPath,
     photoFocusX: photoFocusX ?? this.photoFocusX,
     photoFocusY: photoFocusY ?? this.photoFocusY,
+    photoZoom: photoZoom ?? this.photoZoom,
     allergiesNotes: allergiesNotes.present
         ? allergiesNotes.value
         : this.allergiesNotes,
@@ -657,6 +688,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       photoFocusY: data.photoFocusY.present
           ? data.photoFocusY.value
           : this.photoFocusY,
+      photoZoom: data.photoZoom.present ? data.photoZoom.value : this.photoZoom,
       allergiesNotes: data.allergiesNotes.present
           ? data.allergiesNotes.value
           : this.allergiesNotes,
@@ -682,6 +714,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           ..write('photoPath: $photoPath, ')
           ..write('photoFocusX: $photoFocusX, ')
           ..write('photoFocusY: $photoFocusY, ')
+          ..write('photoZoom: $photoZoom, ')
           ..write('allergiesNotes: $allergiesNotes, ')
           ..write('vetName: $vetName, ')
           ..write('vetClinic: $vetClinic, ')
@@ -705,6 +738,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     photoPath,
     photoFocusX,
     photoFocusY,
+    photoZoom,
     allergiesNotes,
     vetName,
     vetClinic,
@@ -727,6 +761,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           other.photoPath == this.photoPath &&
           other.photoFocusX == this.photoFocusX &&
           other.photoFocusY == this.photoFocusY &&
+          other.photoZoom == this.photoZoom &&
           other.allergiesNotes == this.allergiesNotes &&
           other.vetName == this.vetName &&
           other.vetClinic == this.vetClinic &&
@@ -747,6 +782,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
   final Value<String?> photoPath;
   final Value<double> photoFocusX;
   final Value<double> photoFocusY;
+  final Value<double> photoZoom;
   final Value<String?> allergiesNotes;
   final Value<String?> vetName;
   final Value<String?> vetClinic;
@@ -766,6 +802,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.photoPath = const Value.absent(),
     this.photoFocusX = const Value.absent(),
     this.photoFocusY = const Value.absent(),
+    this.photoZoom = const Value.absent(),
     this.allergiesNotes = const Value.absent(),
     this.vetName = const Value.absent(),
     this.vetClinic = const Value.absent(),
@@ -786,6 +823,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.photoPath = const Value.absent(),
     this.photoFocusX = const Value.absent(),
     this.photoFocusY = const Value.absent(),
+    this.photoZoom = const Value.absent(),
     this.allergiesNotes = const Value.absent(),
     this.vetName = const Value.absent(),
     this.vetClinic = const Value.absent(),
@@ -809,6 +847,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Expression<String>? photoPath,
     Expression<double>? photoFocusX,
     Expression<double>? photoFocusY,
+    Expression<double>? photoZoom,
     Expression<String>? allergiesNotes,
     Expression<String>? vetName,
     Expression<String>? vetClinic,
@@ -829,6 +868,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       if (photoPath != null) 'photo_path': photoPath,
       if (photoFocusX != null) 'photo_focus_x': photoFocusX,
       if (photoFocusY != null) 'photo_focus_y': photoFocusY,
+      if (photoZoom != null) 'photo_zoom': photoZoom,
       if (allergiesNotes != null) 'allergies_notes': allergiesNotes,
       if (vetName != null) 'vet_name': vetName,
       if (vetClinic != null) 'vet_clinic': vetClinic,
@@ -851,6 +891,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Value<String?>? photoPath,
     Value<double>? photoFocusX,
     Value<double>? photoFocusY,
+    Value<double>? photoZoom,
     Value<String?>? allergiesNotes,
     Value<String?>? vetName,
     Value<String?>? vetClinic,
@@ -871,6 +912,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       photoPath: photoPath ?? this.photoPath,
       photoFocusX: photoFocusX ?? this.photoFocusX,
       photoFocusY: photoFocusY ?? this.photoFocusY,
+      photoZoom: photoZoom ?? this.photoZoom,
       allergiesNotes: allergiesNotes ?? this.allergiesNotes,
       vetName: vetName ?? this.vetName,
       vetClinic: vetClinic ?? this.vetClinic,
@@ -919,6 +961,9 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     if (photoFocusY.present) {
       map['photo_focus_y'] = Variable<double>(photoFocusY.value);
     }
+    if (photoZoom.present) {
+      map['photo_zoom'] = Variable<double>(photoZoom.value);
+    }
     if (allergiesNotes.present) {
       map['allergies_notes'] = Variable<String>(allergiesNotes.value);
     }
@@ -957,6 +1002,7 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
           ..write('photoPath: $photoPath, ')
           ..write('photoFocusX: $photoFocusX, ')
           ..write('photoFocusY: $photoFocusY, ')
+          ..write('photoZoom: $photoZoom, ')
           ..write('allergiesNotes: $allergiesNotes, ')
           ..write('vetName: $vetName, ')
           ..write('vetClinic: $vetClinic, ')
@@ -3111,6 +3157,7 @@ typedef $$PetsTableCreateCompanionBuilder = PetsCompanion Function({
   Value<String?> photoPath,
   Value<double> photoFocusX,
   Value<double> photoFocusY,
+  Value<double> photoZoom,
   Value<String?> allergiesNotes,
   Value<String?> vetName,
   Value<String?> vetClinic,
@@ -3131,6 +3178,7 @@ typedef $$PetsTableUpdateCompanionBuilder = PetsCompanion Function({
   Value<String?> photoPath,
   Value<double> photoFocusX,
   Value<double> photoFocusY,
+  Value<double> photoZoom,
   Value<String?> allergiesNotes,
   Value<String?> vetName,
   Value<String?> vetClinic,
@@ -3202,6 +3250,11 @@ class $$PetsTableFilterComposer extends Composer<_$AppDatabase, $PetsTable> {
 
   ColumnFilters<double> get photoFocusY => $composableBuilder(
     column: $table.photoFocusY,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get photoZoom => $composableBuilder(
+    column: $table.photoZoom,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3299,6 +3352,11 @@ class $$PetsTableOrderingComposer extends Composer<_$AppDatabase, $PetsTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get photoZoom => $composableBuilder(
+    column: $table.photoZoom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get allergiesNotes => $composableBuilder(
     column: $table.allergiesNotes,
     builder: (column) => ColumnOrderings(column),
@@ -3376,6 +3434,9 @@ class $$PetsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<double> get photoZoom =>
+      $composableBuilder(column: $table.photoZoom, builder: (column) => column);
+
   GeneratedColumn<String> get allergiesNotes => $composableBuilder(
     column: $table.allergiesNotes,
     builder: (column) => column,
@@ -3436,6 +3497,7 @@ class $$PetsTableTableManager
                 Value<String?> photoPath = const Value.absent(),
                 Value<double> photoFocusX = const Value.absent(),
                 Value<double> photoFocusY = const Value.absent(),
+                Value<double> photoZoom = const Value.absent(),
                 Value<String?> allergiesNotes = const Value.absent(),
                 Value<String?> vetName = const Value.absent(),
                 Value<String?> vetClinic = const Value.absent(),
@@ -3455,6 +3517,7 @@ class $$PetsTableTableManager
                 photoPath: photoPath,
                 photoFocusX: photoFocusX,
                 photoFocusY: photoFocusY,
+                photoZoom: photoZoom,
                 allergiesNotes: allergiesNotes,
                 vetName: vetName,
                 vetClinic: vetClinic,
@@ -3476,6 +3539,7 @@ class $$PetsTableTableManager
                 Value<String?> photoPath = const Value.absent(),
                 Value<double> photoFocusX = const Value.absent(),
                 Value<double> photoFocusY = const Value.absent(),
+                Value<double> photoZoom = const Value.absent(),
                 Value<String?> allergiesNotes = const Value.absent(),
                 Value<String?> vetName = const Value.absent(),
                 Value<String?> vetClinic = const Value.absent(),
@@ -3495,6 +3559,7 @@ class $$PetsTableTableManager
                 photoPath: photoPath,
                 photoFocusX: photoFocusX,
                 photoFocusY: photoFocusY,
+                photoZoom: photoZoom,
                 allergiesNotes: allergiesNotes,
                 vetName: vetName,
                 vetClinic: vetClinic,

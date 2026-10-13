@@ -546,9 +546,10 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: InputDecoration(
-                  hintText:
-                      'Peso del día en ${ref.watch(weightUnitProvider).symbol} (opcional)',
+                decoration: const InputDecoration(
+                  hintText: 'Peso del día (opcional)',
+                  suffixIcon: WeightUnitToggle(),
+                  suffixIconConstraints: BoxConstraints(),
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return null;

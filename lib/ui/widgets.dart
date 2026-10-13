@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import '../app/providers.dart';
 import '../domain/enums.dart';
 import '../domain/models.dart';
 import '../domain/treatment_status.dart';
+import '../domain/weight_unit.dart';
 import 'format.dart';
 import 'theme.dart';
 
@@ -144,7 +147,7 @@ class PetAvatar extends ConsumerWidget {
         width: size,
         height: size,
         child: (file != null && file.existsSync())
-            ? Image.file(file, fit: BoxFit.cover, alignment: Alignment(pet.photoFocusX, pet.photoFocusY))
+            ? FramedImage(file: file, focus: Alignment(pet.photoFocusX, pet.photoFocusY), zoom: pet.photoZoom)
             : ColoredBox(
                 color: AppColors.mint,
                 child: Icon(Icons.pets, color: AppColors.primary, size: size * 0.5),
@@ -168,7 +171,7 @@ class PetPhoto extends ConsumerWidget {
       width: double.infinity,
       height: height,
       child: (file != null && file.existsSync())
-          ? Image.file(file, fit: BoxFit.cover, alignment: Alignment(pet.photoFocusX, pet.photoFocusY))
+          ? FramedImage(file: file, focus: Alignment(pet.photoFocusX, pet.photoFocusY), zoom: pet.photoZoom)
           : const ColoredBox(
               color: AppColors.mint,
               child: Icon(Icons.pets, color: AppColors.primary, size: 96),
@@ -210,4 +213,70 @@ class BackHeader extends StatelessWidget {
         Text(title, style: AppText.title),
         const SizedBox(height: 16),
       ]);
+}
+
+/// Foto con el encuadre elegido: llena el marco (cover), alineada al punto de
+/// enfoque y ampliada [zoom] veces desde ese mismo punto. Equivale a dibujar la
+/// foto a `zoom` veces su tamaño de cover con esa alineación, así el enfoque
+/// -1..1 siempre significa «ese borde pegado al marco».
+class FramedImage extends StatelessWidget {
+  const FramedImage({super.key, required this.file, this.focus = Alignment.center, this.zoom = 1});
+  final File file;
+  final Alignment focus;
+  final double zoom;
+
+  @override
+  Widget build(BuildContext context) => ClipRect(
+        child: Transform.scale(
+          scale: zoom,
+          alignment: focus,
+          child: Image.file(
+            file,
+            fit: BoxFit.cover,
+            alignment: focus,
+            width: double.infinity,
+            height: double.infinity,
+          ),
+        ),
+      );
+}
+
+/// Selector kg | lb para ponerlo junto a los campos de peso. Cambia la unidad
+/// de toda la app (la misma de Ajustes).
+class WeightUnitToggle extends ConsumerWidget {
+  const WeightUnitToggle({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unit = ref.watch(weightUnitProvider);
+    Widget option(WeightUnit u) {
+      final on = u == unit;
+      return GestureDetector(
+        key: Key('weightUnit_${u.name}'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => ref.read(weightUnitProvider.notifier).select(u),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: on ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            u.symbol,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: on ? AppColors.onPrimary : AppColors.inkSoft,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(color: AppColors.muted, borderRadius: BorderRadius.circular(999)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [for (final u in WeightUnit.values) option(u)]),
+    );
+  }
 }

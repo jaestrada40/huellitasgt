@@ -43,6 +43,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
   String? _photo;
   String? _originalPhoto;
   Alignment _focus = Alignment.center;
+  double _zoom = 1;
   Pet? _existing;
   late bool _loading = widget.petId != null;
   bool _saved = false;
@@ -72,6 +73,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       _birth = p.birthDate;
       _photo = _originalPhoto = p.photoPath;
       _focus = Alignment(p.photoFocusX, p.photoFocusY);
+      _zoom = p.photoZoom;
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -112,6 +114,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
         setState(() {
           _photo = rel;
           _focus = Alignment.center; // foto nueva: vuelve a empezar centrada
+          _zoom = 1;
         });
         await _adjustPhoto(); // lo natural al elegir una foto es encuadrarla
       }
@@ -123,12 +126,19 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
   Future<void> _adjustPhoto() async {
     final file = _photo == null ? null : _store.fileFor(_photo!);
     if (file == null || !file.existsSync()) return;
-    final result = await showModalBottomSheet<Alignment>(
+    final result = await showModalBottomSheet<PhotoFraming>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => PhotoFramingSheet(file: file, initial: _focus),
+      enableDrag: false, // si no, la hoja se lleva los arrastres verticales
+      builder: (_) =>
+          PhotoFramingSheet(file: file, initial: PhotoFraming(_focus, _zoom)),
     );
-    if (result != null && mounted) setState(() => _focus = result);
+    if (result != null && mounted) {
+      setState(() {
+        _focus = result.focus;
+        _zoom = result.zoom;
+      });
+    }
   }
 
   Future<void> _pickBirth() async {
@@ -170,6 +180,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       photoPath: _photo,
       photoFocusX: _focus.x,
       photoFocusY: _focus.y,
+      photoZoom: _zoom,
       allergiesNotes: _n(_allergies),
       vetName: _n(_vetName),
       vetClinic: _n(_vetClinic),
@@ -309,10 +320,10 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: hasPhoto
-                            ? Image.file(
-                                photoFile,
-                                fit: BoxFit.cover,
-                                alignment: _focus,
+                            ? FramedImage(
+                                file: photoFile,
+                                focus: _focus,
+                                zoom: _zoom,
                               )
                             : const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -457,9 +468,10 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: InputDecoration(
-                        hintText:
-                            'Peso (${ref.watch(weightUnitProvider).symbol})',
+                      decoration: const InputDecoration(
+                        hintText: 'Peso',
+                        suffixIcon: WeightUnitToggle(),
+                        suffixIconConstraints: BoxConstraints(),
                       ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;

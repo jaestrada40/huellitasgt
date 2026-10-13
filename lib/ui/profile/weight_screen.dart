@@ -237,8 +237,10 @@ class _AddWeightSheetState extends ConsumerState<_AddWeightSheet> {
             controller: _kg,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: 'Peso en ${ref.watch(weightUnitProvider).symbol}',
+            decoration: const InputDecoration(
+              labelText: 'Peso',
+              suffixIcon: WeightUnitToggle(),
+              suffixIconConstraints: BoxConstraints(),
             ),
             validator: (v) {
               final w = _parsed;
