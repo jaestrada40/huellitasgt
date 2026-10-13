@@ -12,6 +12,8 @@ class Pet {
     this.birthDate,
     this.microchip,
     this.photoPath,
+    this.photoFocusX = 0,
+    this.photoFocusY = 0,
     this.allergiesNotes,
     this.vetName,
     this.vetClinic,
@@ -29,6 +31,8 @@ class Pet {
   final DateTime? birthDate; // día calendario (UTC)
   final String? microchip;
   final String? photoPath; // ruta relativa
+  final double photoFocusX; // Alignment -1..1; 0 = centrada
+  final double photoFocusY;
   final String? allergiesNotes;
   final String? vetName;
   final String? vetClinic;

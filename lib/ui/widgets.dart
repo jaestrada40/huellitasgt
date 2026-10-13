@@ -144,7 +144,7 @@ class PetAvatar extends ConsumerWidget {
         width: size,
         height: size,
         child: (file != null && file.existsSync())
-            ? Image.file(file, fit: BoxFit.cover)
+            ? Image.file(file, fit: BoxFit.cover, alignment: Alignment(pet.photoFocusX, pet.photoFocusY))
             : ColoredBox(
                 color: AppColors.mint,
                 child: Icon(Icons.pets, color: AppColors.primary, size: size * 0.5),
@@ -168,7 +168,7 @@ class PetPhoto extends ConsumerWidget {
       width: double.infinity,
       height: height,
       child: (file != null && file.existsSync())
-          ? Image.file(file, fit: BoxFit.cover)
+          ? Image.file(file, fit: BoxFit.cover, alignment: Alignment(pet.photoFocusX, pet.photoFocusY))
           : const ColoredBox(
               color: AppColors.mint,
               child: Icon(Icons.pets, color: AppColors.primary, size: 96),

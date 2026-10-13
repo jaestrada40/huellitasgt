@@ -101,6 +101,30 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _photoFocusXMeta = const VerificationMeta(
+    'photoFocusX',
+  );
+  @override
+  late final GeneratedColumn<double> photoFocusX = GeneratedColumn<double>(
+    'photo_focus_x',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _photoFocusYMeta = const VerificationMeta(
+    'photoFocusY',
+  );
+  @override
+  late final GeneratedColumn<double> photoFocusY = GeneratedColumn<double>(
+    'photo_focus_y',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _allergiesNotesMeta = const VerificationMeta(
     'allergiesNotes',
   );
@@ -182,6 +206,8 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
     birthDate,
     microchip,
     photoPath,
+    photoFocusX,
+    photoFocusY,
     allergiesNotes,
     vetName,
     vetClinic,
@@ -242,6 +268,24 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
       context.handle(
         _photoPathMeta,
         photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta),
+      );
+    }
+    if (data.containsKey('photo_focus_x')) {
+      context.handle(
+        _photoFocusXMeta,
+        photoFocusX.isAcceptableOrUnknown(
+          data['photo_focus_x']!,
+          _photoFocusXMeta,
+        ),
+      );
+    }
+    if (data.containsKey('photo_focus_y')) {
+      context.handle(
+        _photoFocusYMeta,
+        photoFocusY.isAcceptableOrUnknown(
+          data['photo_focus_y']!,
+          _photoFocusYMeta,
+        ),
       );
     }
     if (data.containsKey('allergies_notes')) {
@@ -334,6 +378,14 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
         DriftSqlType.string,
         data['${effectivePrefix}photo_path'],
       ),
+      photoFocusX: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}photo_focus_x'],
+      )!,
+      photoFocusY: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}photo_focus_y'],
+      )!,
       allergiesNotes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}allergies_notes'],
@@ -384,6 +436,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
   final DateTime? birthDate;
   final String? microchip;
   final String? photoPath;
+  final double photoFocusX;
+  final double photoFocusY;
   final String? allergiesNotes;
   final String? vetName;
   final String? vetClinic;
@@ -400,6 +454,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     this.birthDate,
     this.microchip,
     this.photoPath,
+    required this.photoFocusX,
+    required this.photoFocusY,
     this.allergiesNotes,
     this.vetName,
     this.vetClinic,
@@ -433,6 +489,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     if (!nullToAbsent || photoPath != null) {
       map['photo_path'] = Variable<String>(photoPath);
     }
+    map['photo_focus_x'] = Variable<double>(photoFocusX);
+    map['photo_focus_y'] = Variable<double>(photoFocusY);
     if (!nullToAbsent || allergiesNotes != null) {
       map['allergies_notes'] = Variable<String>(allergiesNotes);
     }
@@ -469,6 +527,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       photoPath: photoPath == null && nullToAbsent
           ? const Value.absent()
           : Value(photoPath),
+      photoFocusX: Value(photoFocusX),
+      photoFocusY: Value(photoFocusY),
       allergiesNotes: allergiesNotes == null && nullToAbsent
           ? const Value.absent()
           : Value(allergiesNotes),
@@ -505,6 +565,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       birthDate: serializer.fromJson<DateTime?>(json['birthDate']),
       microchip: serializer.fromJson<String?>(json['microchip']),
       photoPath: serializer.fromJson<String?>(json['photoPath']),
+      photoFocusX: serializer.fromJson<double>(json['photoFocusX']),
+      photoFocusY: serializer.fromJson<double>(json['photoFocusY']),
       allergiesNotes: serializer.fromJson<String?>(json['allergiesNotes']),
       vetName: serializer.fromJson<String?>(json['vetName']),
       vetClinic: serializer.fromJson<String?>(json['vetClinic']),
@@ -528,6 +590,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       'birthDate': serializer.toJson<DateTime?>(birthDate),
       'microchip': serializer.toJson<String?>(microchip),
       'photoPath': serializer.toJson<String?>(photoPath),
+      'photoFocusX': serializer.toJson<double>(photoFocusX),
+      'photoFocusY': serializer.toJson<double>(photoFocusY),
       'allergiesNotes': serializer.toJson<String?>(allergiesNotes),
       'vetName': serializer.toJson<String?>(vetName),
       'vetClinic': serializer.toJson<String?>(vetClinic),
@@ -547,6 +611,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     Value<DateTime?> birthDate = const Value.absent(),
     Value<String?> microchip = const Value.absent(),
     Value<String?> photoPath = const Value.absent(),
+    double? photoFocusX,
+    double? photoFocusY,
     Value<String?> allergiesNotes = const Value.absent(),
     Value<String?> vetName = const Value.absent(),
     Value<String?> vetClinic = const Value.absent(),
@@ -563,6 +629,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     birthDate: birthDate.present ? birthDate.value : this.birthDate,
     microchip: microchip.present ? microchip.value : this.microchip,
     photoPath: photoPath.present ? photoPath.value : this.photoPath,
+    photoFocusX: photoFocusX ?? this.photoFocusX,
+    photoFocusY: photoFocusY ?? this.photoFocusY,
     allergiesNotes: allergiesNotes.present
         ? allergiesNotes.value
         : this.allergiesNotes,
@@ -583,6 +651,12 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
       microchip: data.microchip.present ? data.microchip.value : this.microchip,
       photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
+      photoFocusX: data.photoFocusX.present
+          ? data.photoFocusX.value
+          : this.photoFocusX,
+      photoFocusY: data.photoFocusY.present
+          ? data.photoFocusY.value
+          : this.photoFocusY,
       allergiesNotes: data.allergiesNotes.present
           ? data.allergiesNotes.value
           : this.allergiesNotes,
@@ -606,6 +680,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           ..write('birthDate: $birthDate, ')
           ..write('microchip: $microchip, ')
           ..write('photoPath: $photoPath, ')
+          ..write('photoFocusX: $photoFocusX, ')
+          ..write('photoFocusY: $photoFocusY, ')
           ..write('allergiesNotes: $allergiesNotes, ')
           ..write('vetName: $vetName, ')
           ..write('vetClinic: $vetClinic, ')
@@ -627,6 +703,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     birthDate,
     microchip,
     photoPath,
+    photoFocusX,
+    photoFocusY,
     allergiesNotes,
     vetName,
     vetClinic,
@@ -647,6 +725,8 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           other.birthDate == this.birthDate &&
           other.microchip == this.microchip &&
           other.photoPath == this.photoPath &&
+          other.photoFocusX == this.photoFocusX &&
+          other.photoFocusY == this.photoFocusY &&
           other.allergiesNotes == this.allergiesNotes &&
           other.vetName == this.vetName &&
           other.vetClinic == this.vetClinic &&
@@ -665,6 +745,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
   final Value<DateTime?> birthDate;
   final Value<String?> microchip;
   final Value<String?> photoPath;
+  final Value<double> photoFocusX;
+  final Value<double> photoFocusY;
   final Value<String?> allergiesNotes;
   final Value<String?> vetName;
   final Value<String?> vetClinic;
@@ -682,6 +764,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.birthDate = const Value.absent(),
     this.microchip = const Value.absent(),
     this.photoPath = const Value.absent(),
+    this.photoFocusX = const Value.absent(),
+    this.photoFocusY = const Value.absent(),
     this.allergiesNotes = const Value.absent(),
     this.vetName = const Value.absent(),
     this.vetClinic = const Value.absent(),
@@ -700,6 +784,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.birthDate = const Value.absent(),
     this.microchip = const Value.absent(),
     this.photoPath = const Value.absent(),
+    this.photoFocusX = const Value.absent(),
+    this.photoFocusY = const Value.absent(),
     this.allergiesNotes = const Value.absent(),
     this.vetName = const Value.absent(),
     this.vetClinic = const Value.absent(),
@@ -721,6 +807,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Expression<DateTime>? birthDate,
     Expression<String>? microchip,
     Expression<String>? photoPath,
+    Expression<double>? photoFocusX,
+    Expression<double>? photoFocusY,
     Expression<String>? allergiesNotes,
     Expression<String>? vetName,
     Expression<String>? vetClinic,
@@ -739,6 +827,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       if (birthDate != null) 'birth_date': birthDate,
       if (microchip != null) 'microchip': microchip,
       if (photoPath != null) 'photo_path': photoPath,
+      if (photoFocusX != null) 'photo_focus_x': photoFocusX,
+      if (photoFocusY != null) 'photo_focus_y': photoFocusY,
       if (allergiesNotes != null) 'allergies_notes': allergiesNotes,
       if (vetName != null) 'vet_name': vetName,
       if (vetClinic != null) 'vet_clinic': vetClinic,
@@ -759,6 +849,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Value<DateTime?>? birthDate,
     Value<String?>? microchip,
     Value<String?>? photoPath,
+    Value<double>? photoFocusX,
+    Value<double>? photoFocusY,
     Value<String?>? allergiesNotes,
     Value<String?>? vetName,
     Value<String?>? vetClinic,
@@ -777,6 +869,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       birthDate: birthDate ?? this.birthDate,
       microchip: microchip ?? this.microchip,
       photoPath: photoPath ?? this.photoPath,
+      photoFocusX: photoFocusX ?? this.photoFocusX,
+      photoFocusY: photoFocusY ?? this.photoFocusY,
       allergiesNotes: allergiesNotes ?? this.allergiesNotes,
       vetName: vetName ?? this.vetName,
       vetClinic: vetClinic ?? this.vetClinic,
@@ -819,6 +913,12 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     if (photoPath.present) {
       map['photo_path'] = Variable<String>(photoPath.value);
     }
+    if (photoFocusX.present) {
+      map['photo_focus_x'] = Variable<double>(photoFocusX.value);
+    }
+    if (photoFocusY.present) {
+      map['photo_focus_y'] = Variable<double>(photoFocusY.value);
+    }
     if (allergiesNotes.present) {
       map['allergies_notes'] = Variable<String>(allergiesNotes.value);
     }
@@ -855,6 +955,8 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
           ..write('birthDate: $birthDate, ')
           ..write('microchip: $microchip, ')
           ..write('photoPath: $photoPath, ')
+          ..write('photoFocusX: $photoFocusX, ')
+          ..write('photoFocusY: $photoFocusY, ')
           ..write('allergiesNotes: $allergiesNotes, ')
           ..write('vetName: $vetName, ')
           ..write('vetClinic: $vetClinic, ')
@@ -3007,6 +3109,8 @@ typedef $$PetsTableCreateCompanionBuilder = PetsCompanion Function({
   Value<DateTime?> birthDate,
   Value<String?> microchip,
   Value<String?> photoPath,
+  Value<double> photoFocusX,
+  Value<double> photoFocusY,
   Value<String?> allergiesNotes,
   Value<String?> vetName,
   Value<String?> vetClinic,
@@ -3025,6 +3129,8 @@ typedef $$PetsTableUpdateCompanionBuilder = PetsCompanion Function({
   Value<DateTime?> birthDate,
   Value<String?> microchip,
   Value<String?> photoPath,
+  Value<double> photoFocusX,
+  Value<double> photoFocusY,
   Value<String?> allergiesNotes,
   Value<String?> vetName,
   Value<String?> vetClinic,
@@ -3086,6 +3192,16 @@ class $$PetsTableFilterComposer extends Composer<_$AppDatabase, $PetsTable> {
 
   ColumnFilters<String> get photoPath => $composableBuilder(
     column: $table.photoPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get photoFocusX => $composableBuilder(
+    column: $table.photoFocusX,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get photoFocusY => $composableBuilder(
+    column: $table.photoFocusY,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3173,6 +3289,16 @@ class $$PetsTableOrderingComposer extends Composer<_$AppDatabase, $PetsTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get photoFocusX => $composableBuilder(
+    column: $table.photoFocusX,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get photoFocusY => $composableBuilder(
+    column: $table.photoFocusY,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get allergiesNotes => $composableBuilder(
     column: $table.allergiesNotes,
     builder: (column) => ColumnOrderings(column),
@@ -3240,6 +3366,16 @@ class $$PetsTableAnnotationComposer
   GeneratedColumn<String> get photoPath =>
       $composableBuilder(column: $table.photoPath, builder: (column) => column);
 
+  GeneratedColumn<double> get photoFocusX => $composableBuilder(
+    column: $table.photoFocusX,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get photoFocusY => $composableBuilder(
+    column: $table.photoFocusY,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get allergiesNotes => $composableBuilder(
     column: $table.allergiesNotes,
     builder: (column) => column,
@@ -3298,6 +3434,8 @@ class $$PetsTableTableManager
                 Value<DateTime?> birthDate = const Value.absent(),
                 Value<String?> microchip = const Value.absent(),
                 Value<String?> photoPath = const Value.absent(),
+                Value<double> photoFocusX = const Value.absent(),
+                Value<double> photoFocusY = const Value.absent(),
                 Value<String?> allergiesNotes = const Value.absent(),
                 Value<String?> vetName = const Value.absent(),
                 Value<String?> vetClinic = const Value.absent(),
@@ -3315,6 +3453,8 @@ class $$PetsTableTableManager
                 birthDate: birthDate,
                 microchip: microchip,
                 photoPath: photoPath,
+                photoFocusX: photoFocusX,
+                photoFocusY: photoFocusY,
                 allergiesNotes: allergiesNotes,
                 vetName: vetName,
                 vetClinic: vetClinic,
@@ -3334,6 +3474,8 @@ class $$PetsTableTableManager
                 Value<DateTime?> birthDate = const Value.absent(),
                 Value<String?> microchip = const Value.absent(),
                 Value<String?> photoPath = const Value.absent(),
+                Value<double> photoFocusX = const Value.absent(),
+                Value<double> photoFocusY = const Value.absent(),
                 Value<String?> allergiesNotes = const Value.absent(),
                 Value<String?> vetName = const Value.absent(),
                 Value<String?> vetClinic = const Value.absent(),
@@ -3351,6 +3493,8 @@ class $$PetsTableTableManager
                 birthDate: birthDate,
                 microchip: microchip,
                 photoPath: photoPath,
+                photoFocusX: photoFocusX,
+                photoFocusY: photoFocusY,
                 allergiesNotes: allergiesNotes,
                 vetName: vetName,
                 vetClinic: vetClinic,

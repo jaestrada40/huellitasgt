@@ -13,6 +13,7 @@ import '../../domain/models.dart';
 import '../../services/attachment_store.dart';
 import '../format.dart';
 import '../theme.dart';
+import 'photo_framing_sheet.dart';
 import '../widgets.dart';
 
 class PetFormScreen extends ConsumerStatefulWidget {
@@ -41,6 +42,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
   DateTime? _birth;
   String? _photo;
   String? _originalPhoto;
+  Alignment _focus = Alignment.center;
   Pet? _existing;
   late bool _loading = widget.petId != null;
   bool _saved = false;
@@ -69,6 +71,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       _neutered = p.neutered;
       _birth = p.birthDate;
       _photo = _originalPhoto = p.photoPath;
+      _focus = Alignment(p.photoFocusX, p.photoFocusY);
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -105,10 +108,26 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       if (_photo != null && _photo != _originalPhoto) {
         await _store.delete(_photo!);
       }
-      if (mounted) setState(() => _photo = rel);
+      if (mounted) {
+        setState(() {
+          _photo = rel;
+          _focus = Alignment.center; // foto nueva: vuelve a empezar centrada
+        });
+      }
     } on AttachmentException catch (e) {
       if (mounted) _snack(e.message);
     }
+  }
+
+  Future<void> _adjustPhoto() async {
+    final file = _photo == null ? null : _store.fileFor(_photo!);
+    if (file == null || !file.existsSync()) return;
+    final result = await showModalBottomSheet<Alignment>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => PhotoFramingSheet(file: file, initial: _focus),
+    );
+    if (result != null && mounted) setState(() => _focus = result);
   }
 
   Future<void> _pickBirth() async {
@@ -148,6 +167,8 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       birthDate: _birth,
       microchip: _n(_microchip),
       photoPath: _photo,
+      photoFocusX: _focus.x,
+      photoFocusY: _focus.y,
       allergiesNotes: _n(_allergies),
       vetName: _n(_vetName),
       vetClinic: _n(_vetClinic),
@@ -281,7 +302,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: hasPhoto
-                        ? Image.file(photoFile, fit: BoxFit.cover)
+                        ? Image.file(photoFile, fit: BoxFit.cover, alignment: _focus)
                         : const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -303,8 +324,8 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                   ),
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
                 children: [
                   TextButton(
                     onPressed: () => _pickPhoto(ImageSource.camera),
@@ -314,6 +335,12 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                     onPressed: () => _pickPhoto(ImageSource.gallery),
                     child: const Text('Elegir de la galería'),
                   ),
+                  if (hasPhoto)
+                    TextButton(
+                      key: const Key('adjustPhotoButton'),
+                      onPressed: _adjustPhoto,
+                      child: const Text('Ajustar foto'),
+                    ),
                 ],
               ),
               const SizedBox(height: 8),

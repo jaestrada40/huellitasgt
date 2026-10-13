@@ -33,6 +33,8 @@ Map<String, dynamic> backupToJson(
             'birthDate': p.birthDate == null ? null : _iso(p.birthDate!),
             'microchip': p.microchip,
             'photoPath': p.photoPath,
+            'photoFocusX': p.photoFocusX,
+            'photoFocusY': p.photoFocusY,
             'allergiesNotes': p.allergiesNotes,
             'vetName': p.vetName,
             'vetClinic': p.vetClinic,
@@ -107,6 +109,9 @@ BackupData backupFromJson(Map<String, dynamic> j) {
           birthDate: m['birthDate'] == null ? null : _day(m['birthDate']),
           microchip: m['microchip'] as String?,
           photoPath: m['photoPath'] as String?,
+          // Los respaldos anteriores no traen enfoque: foto centrada.
+          photoFocusX: _doubleOrNull(m['photoFocusX']) ?? 0,
+          photoFocusY: _doubleOrNull(m['photoFocusY']) ?? 0,
           allergiesNotes: m['allergiesNotes'] as String?,
           vetName: m['vetName'] as String?,
           vetClinic: m['vetClinic'] as String?,
