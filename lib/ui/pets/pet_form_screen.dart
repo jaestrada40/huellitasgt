@@ -391,7 +391,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                   controller: _userName,
                   textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
-                    hintText: '¿Cómo te llamas?',
+                    hintText: 'Tu nombre',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -409,7 +409,9 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                 key: const Key('petNameField'),
                 controller: _name,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(hintText: 'Nombre'),
+                decoration: const InputDecoration(
+                  hintText: 'Nombre de tu mascota',
+                ),
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? 'Escribe el nombre'
                     : null,

@@ -143,21 +143,21 @@ class _VaccineTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  event.title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-              if (t != null && t.active)
-                StatusChip.forDue(
+          Text(
+            event.title,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          if (t != null && t.active)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: StatusChip.forDue(
                   dueStatus(t.nextDueDate, now),
                   dueLabel(t.nextDueDate, now),
                 ),
-            ],
-          ),
+              ),
+            ),
           Text(
             'Aplicada: ${fmtDay(event.occurredAt)}',
             style: const TextStyle(color: AppColors.inkSoft),

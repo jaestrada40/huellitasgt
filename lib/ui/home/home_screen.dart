@@ -262,9 +262,11 @@ class _ReminderCard extends ConsumerWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(t.name, style: AppText.cardTitle),
               Text('$petName · ${fmtDay(t.nextDueDate)}', style: AppText.body),
+              // Debajo del título: al lado le quitaba ancho y partía palabras.
+              const SizedBox(height: 6),
+              StatusChip(item.label, chipKind),
             ]),
           ),
-          StatusChip(item.label, chipKind),
         ]),
         const SizedBox(height: 12),
         SizedBox(
