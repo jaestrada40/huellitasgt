@@ -98,7 +98,7 @@ class EventDetailScreen extends ConsumerWidget {
               if (e.lot != null) ('Lote', e.lot!),
               if (e.vetName != null) ('Veterinario', e.vetName!),
               if (e.clinic != null) ('Clínica', e.clinic!),
-              if (e.weightKg != null) ('Peso', '${e.weightKg} kg'),
+              if (e.weightKg != null) ('Peso', ref.watch(weightUnitProvider).format(e.weightKg!)),
               if (t != null)
                 ('Recordatorio', t.reminderEnabled ? '${t.reminderDaysBefore} ${t.reminderDaysBefore == 1 ? 'día' : 'días'} antes' : 'Desactivado'),
             ];

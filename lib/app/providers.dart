@@ -9,6 +9,7 @@ import '../data/drift_repositories.dart';
 import '../domain/health_service.dart';
 import '../domain/models.dart';
 import '../domain/repositories.dart';
+import '../domain/weight_unit.dart';
 import '../services/app_prefs.dart';
 import '../services/attachment_store.dart';
 import '../services/backup_service.dart';
@@ -82,6 +83,19 @@ class SelectedPetId extends Notifier<String?> {
 }
 
 final selectedPetIdProvider = NotifierProvider<SelectedPetId, String?>(SelectedPetId.new);
+
+/// Unidad de peso elegida en Ajustes (el peso se guarda siempre en kg).
+class WeightUnitNotifier extends Notifier<WeightUnit> {
+  @override
+  WeightUnit build() => ref.read(prefsProvider).weightUnit;
+
+  Future<void> select(WeightUnit unit) async {
+    state = unit;
+    await ref.read(prefsProvider).setWeightUnit(unit);
+  }
+}
+
+final weightUnitProvider = NotifierProvider<WeightUnitNotifier, WeightUnit>(WeightUnitNotifier.new);
 
 /// Filtro de Inicio: `null` = «Todas» las mascotas.
 class HomeFilter extends Notifier<String?> {

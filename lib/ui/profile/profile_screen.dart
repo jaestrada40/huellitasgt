@@ -60,7 +60,7 @@ class ProfileScreen extends ConsumerWidget {
     final rows = <(IconData, String, String, VoidCallback?)>[
       if (pet.birthDate != null)
         (Icons.cake_outlined, 'Nacimiento', '${fmtDay(pet.birthDate!)} · ${ageLong(pet.birthDate!, now)}', null),
-      (Icons.monitor_weight_outlined, 'Peso', lastWeight == null ? 'Registrar' : '${lastWeight.kg.toStringAsFixed(1)} kg',
+      (Icons.monitor_weight_outlined, 'Peso', lastWeight == null ? 'Registrar' : ref.watch(weightUnitProvider).format(lastWeight.kg),
           () => context.push('/pets/${pet.id}/weight')),
       if (pet.microchip != null)
         (Icons.memory_outlined, 'Microchip', pet.microchip!, () => Clipboard.setData(ClipboardData(text: pet.microchip!))),

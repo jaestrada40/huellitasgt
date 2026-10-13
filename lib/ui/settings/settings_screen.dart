@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../app/providers.dart';
+import '../../domain/weight_unit.dart';
 import '../../services/backup_service.dart';
 import '../format.dart';
 import '../share_helpers.dart';
@@ -136,6 +137,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: 'Notificaciones',
                   subtitle: '$time · ${prefs.reminderDaysBefore} ${prefs.reminderDaysBefore == 1 ? 'día' : 'días'} antes',
                   onTap: () => _openSheet((_) => const _NotificationsSheet()),
+                ),
+                const Divider(indent: 60),
+                row(
+                  icon: Icons.monitor_weight_outlined,
+                  bg: AppColors.greenBg,
+                  fg: AppColors.greenInk,
+                  title: 'Unidad de peso',
+                  trailing: SegmentedButton<WeightUnit>(
+                    key: const Key('weightUnitSelector'),
+                    showSelectedIcon: false,
+                    style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                    segments: [
+                      for (final u in WeightUnit.values) ButtonSegment(value: u, label: Text(u.symbol)),
+                    ],
+                    selected: {ref.watch(weightUnitProvider)},
+                    onSelectionChanged: (s) => ref.read(weightUnitProvider.notifier).select(s.first),
+                  ),
                 ),
                 const Divider(indent: 60),
                 row(

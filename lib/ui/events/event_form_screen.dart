@@ -84,8 +84,11 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   void _snack(String msg) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
-  double? get _parsedWeight =>
-      double.tryParse(_weight.text.trim().replaceAll(',', '.'));
+  /// El valor escrito, convertido a kg (así se guarda).
+  double? get _parsedWeight {
+    final v = double.tryParse(_weight.text.trim().replaceAll(',', '.'));
+    return v == null ? null : ref.read(weightUnitProvider).toKg(v);
+  }
 
   Future<void> _pickDate() async {
     final d = await showDatePicker(
@@ -543,8 +546,9 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
-                  hintText: 'Peso del día en kg (opcional)',
+                decoration: InputDecoration(
+                  hintText:
+                      'Peso del día en ${ref.watch(weightUnitProvider).symbol} (opcional)',
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return null;

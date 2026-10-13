@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../domain/weight_unit.dart';
+
 class AppPrefs {
   AppPrefs(this._p);
   final SharedPreferences _p;
@@ -11,6 +13,10 @@ class AppPrefs {
     final t = name.trim();
     return t.isEmpty ? _p.remove('userName') : _p.setString('userName', t);
   }
+
+  WeightUnit get weightUnit =>
+      _p.getString('weightUnit') == 'lb' ? WeightUnit.lb : WeightUnit.kg;
+  Future<void> setWeightUnit(WeightUnit u) => _p.setString('weightUnit', u.name);
 
   bool get lockEnabled => _p.getBool('lockEnabled') ?? false;
   Future<void> setLockEnabled(bool v) => _p.setBool('lockEnabled', v);

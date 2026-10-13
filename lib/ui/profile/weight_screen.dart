@@ -27,6 +27,7 @@ class WeightScreen extends ConsumerWidget {
     final now = ref.watch(clockProvider)();
     final trend = weightTrend(entries, now);
     final delta = trend?.deltaVsMonthAgo;
+    final unit = ref.watch(weightUnitProvider);
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
@@ -50,13 +51,13 @@ class WeightScreen extends ConsumerWidget {
                           style: TextStyle(color: AppColors.inkSoft),
                         ),
                         Text(
-                          '${trend.current.toStringAsFixed(1)} kg',
+                          unit.format(trend.current),
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         if (delta != null)
                           Text(
-                            '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)} kg vs mes pasado',
+                            '${delta >= 0 ? '+' : ''}${unit.fromKg(delta).toStringAsFixed(1)} ${unit.symbol} vs mes pasado',
                             style: const TextStyle(color: AppColors.inkSoft),
                           ),
                       ],
@@ -92,7 +93,7 @@ class WeightScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${e.kg.toStringAsFixed(1)} kg',
+                              unit.format(e.kg),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -180,7 +181,11 @@ class _AddWeightSheetState extends ConsumerState<_AddWeightSheet> {
     super.dispose();
   }
 
-  double? get _parsed => double.tryParse(_kg.text.trim().replaceAll(',', '.'));
+  /// El valor escrito, convertido a kg (así se guarda).
+  double? get _parsed {
+    final v = double.tryParse(_kg.text.trim().replaceAll(',', '.'));
+    return v == null ? null : ref.read(weightUnitProvider).toKg(v);
+  }
 
   Future<void> _pickDate() async {
     final d = await showDatePicker(
@@ -232,7 +237,9 @@ class _AddWeightSheetState extends ConsumerState<_AddWeightSheet> {
             controller: _kg,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Peso en kg'),
+            decoration: InputDecoration(
+              labelText: 'Peso en ${ref.watch(weightUnitProvider).symbol}',
+            ),
             validator: (v) {
               final w = _parsed;
               return (w == null || w <= 0 || w >= 300)

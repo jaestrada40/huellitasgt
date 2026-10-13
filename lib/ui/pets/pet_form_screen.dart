@@ -129,8 +129,11 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
     return t.isEmpty ? null : t;
   }
 
-  double? get _parsedWeight =>
-      double.tryParse(_weight.text.trim().replaceAll(',', '.'));
+  /// El valor escrito, convertido a kg (así se guarda).
+  double? get _parsedWeight {
+    final v = double.tryParse(_weight.text.trim().replaceAll(',', '.'));
+    return v == null ? null : ref.read(weightUnitProvider).toKg(v);
+  }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
@@ -397,7 +400,9 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(hintText: 'Peso (kg)'),
+                      decoration: InputDecoration(
+                        hintText: 'Peso (${ref.watch(weightUnitProvider).symbol})',
+                      ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
                         final w = _parsedWeight;
