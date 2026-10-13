@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 
 import '../../app/providers.dart';
 import '../../domain/dates.dart';
@@ -108,10 +107,10 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   }
 
   Future<void> _addPhoto(ImageSource source) async {
-    final x = await ImagePicker().pickImage(source: source);
-    if (x == null) return;
+    final picked = await ref.read(pickPhotoProvider)(source);
+    if (picked == null) return;
     try {
-      final rel = await _store.importImage(File(x.path));
+      final rel = await _store.importImage(picked);
       if (mounted) {
         setState(
           () => _attachments.add(
@@ -602,13 +601,21 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                           right: 0,
                           top: 0,
                           child: GestureDetector(
+                            key: Key('removeAttachment_${_attachments.indexOf(a)}'),
+                            behavior: HitTestBehavior.opaque,
                             onTap: () {
                               unawaited(_store.delete(a.relativePath));
                               setState(() => _attachments.remove(a));
                             },
-                            child: const CircleAvatar(
-                              radius: 10,
-                              child: Icon(Icons.close, size: 12),
+                            // Área de toque cómoda (la «x» visible es pequeña).
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: CircleAvatar(
+                                radius: 12,
+                                backgroundColor: AppColors.coral,
+                                foregroundColor: Colors.white,
+                                child: Icon(Icons.close, size: 15),
+                              ),
                             ),
                           ),
                         ),

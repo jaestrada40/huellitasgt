@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 
 import '../../app/providers.dart';
 import '../../domain/dates.dart';
@@ -103,10 +102,10 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   Future<void> _pickPhoto(ImageSource source) async {
-    final x = await ImagePicker().pickImage(source: source);
-    if (x == null) return;
+    final picked = await ref.read(pickPhotoProvider)(source);
+    if (picked == null) return;
     try {
-      final rel = await _store.importImage(File(x.path));
+      final rel = await _store.importImage(picked);
       if (_photo != null && _photo != _originalPhoto) {
         await _store.delete(_photo!);
       }
@@ -121,6 +120,19 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
     } on AttachmentException catch (e) {
       if (mounted) _snack(e.message);
     }
+  }
+
+  /// Quita la foto del formulario. Si era una foto nueva que aún no se guarda
+  /// se borra ya; la original solo se borra al guardar, así «Cancelar» la
+  /// conserva.
+  Future<void> _removePhoto() async {
+    final old = _photo;
+    setState(() {
+      _photo = null;
+      _focus = Alignment.center;
+      _zoom = 1;
+    });
+    if (old != null && old != _originalPhoto) await _store.delete(old);
   }
 
   Future<void> _adjustPhoto() async {
@@ -381,6 +393,15 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                       key: const Key('adjustPhotoButton'),
                       onPressed: _adjustPhoto,
                       child: const Text('Mover / centrar foto'),
+                    ),
+                  if (hasPhoto)
+                    TextButton(
+                      key: const Key('removePhotoButton'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.coral,
+                      ),
+                      onPressed: _removePhoto,
+                      child: const Text('Quitar foto'),
                     ),
                 ],
               ),

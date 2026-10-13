@@ -1,30 +1,13 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:huellitas/data/drift_repositories.dart';
 import 'package:huellitas/ui/events/event_detail_screen.dart';
 
+import '../helpers/io_helpers.dart';
 import '../helpers/pump_app.dart';
 import '../helpers/samples.dart';
-
-Future<File> _png(Directory dir, String name) async {
-  final recorder = ui.PictureRecorder();
-  Canvas(recorder).drawRect(const Rect.fromLTWH(0, 0, 20, 20), Paint()..color = Colors.green);
-  final image = await recorder.endRecording().toImage(20, 20);
-  final bytes = (await image.toByteData(format: ui.ImageByteFormat.png))!;
-  return File('${dir.path}/$name')..writeAsBytesSync(bytes.buffer.asUint8List());
-}
-
-/// Los archivos y la BD usan E/S real, que el reloj falso no hace avanzar:
-/// alterna tiempo real y cuadros hasta que se encadenan todos los pasos.
-Future<void> settleIo(WidgetTester tester) async {
-  for (var i = 0; i < 10; i++) {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 40)));
-    await tester.pump();
-  }
-}
 
 void main() {
   Future<TestEnv> setup(WidgetTester tester, {bool withPhoto = false}) async {
@@ -33,7 +16,7 @@ void main() {
     addTearDown(tester.view.reset);
     final env = await createEnv(); // hoy = 24 oct 2024
     if (withPhoto) {
-      final photo = (await tester.runAsync(() => _png(env.docs, 'seed.png')))!;
+      final photo = (await tester.runAsync(() => writePng(env.docs, 'seed.png')))!;
       File('${env.docs.path}/attachments/a1.jpg')
         ..createSync(recursive: true)
         ..writeAsBytesSync(photo.readAsBytesSync());
@@ -90,7 +73,7 @@ void main() {
 
   testWidgets('agregar foto a un registro guardado sin fotos', (tester) async {
     final env = await setup(tester);
-    env.pickedPhoto = (await tester.runAsync(() => _png(env.docs, 'carnet.png')))!;
+    env.pickedPhoto = (await tester.runAsync(() => writePng(env.docs, 'carnet.png')))!;
 
     await tester.ensureVisible(find.byKey(const Key('addDocumentPhoto')));
     await tester.tap(find.byKey(const Key('addDocumentPhoto')));

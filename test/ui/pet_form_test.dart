@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:huellitas/data/drift_repositories.dart';
 import 'package:huellitas/domain/enums.dart';
 import 'package:huellitas/ui/pets/pet_form_screen.dart';
 
+import '../helpers/io_helpers.dart';
 import '../helpers/pump_app.dart';
+import '../helpers/samples.dart';
 
 void main() {
   void tall(WidgetTester tester) {
@@ -66,6 +70,53 @@ void main() {
     expect(find.text('Escribe un peso válido'), findsOneWidget);
     final pets = await runDb(tester, () => DriftPetRepository(env.db).all());
     expect(pets, isEmpty);
+    await unmount(tester);
+  });
+
+  Future<File> seedPetWithPhoto(WidgetTester tester, TestEnv env) async {
+    final file = (await tester.runAsync(() => writePng(env.docs, 'attachments/k.jpg')))!;
+    await runDb(tester, () => DriftPetRepository(env.db).save(samplePet(photoPath: 'attachments/k.jpg')));
+    return file;
+  }
+
+  testWidgets('quitar foto y guardar: la mascota queda sin foto y se borra el archivo', (tester) async {
+    tall(tester);
+    final env = await createEnv();
+    final file = await seedPetWithPhoto(tester, env);
+    await pumpScreen(tester, env, const PetFormScreen(petId: 'p1'));
+    await settleIo(tester);
+
+    await tester.ensureVisible(find.byKey(const Key('removePhotoButton')));
+    await tester.tap(find.byKey(const Key('removePhotoButton')));
+    await tester.pump();
+    expect(find.byKey(const Key('removePhotoButton')), findsNothing); // ya no hay foto que quitar
+
+    await tester.ensureVisible(find.text('Guardar'));
+    await tester.tap(find.text('Guardar'));
+    await settleIo(tester);
+
+    final pet = await runDb(tester, () => DriftPetRepository(env.db).get('p1'));
+    expect(pet!.photoPath, isNull);
+    expect(file.existsSync(), isFalse);
+    await unmount(tester);
+  });
+
+  testWidgets('quitar foto y cancelar: la foto original se conserva', (tester) async {
+    tall(tester);
+    final env = await createEnv();
+    final file = await seedPetWithPhoto(tester, env);
+    await pumpScreen(tester, env, const PetFormScreen(petId: 'p1'));
+    await settleIo(tester);
+
+    await tester.ensureVisible(find.byKey(const Key('removePhotoButton')));
+    await tester.tap(find.byKey(const Key('removePhotoButton')));
+    await tester.pump();
+    await tester.tap(find.text('Cancelar'));
+    await settleIo(tester);
+
+    final pet = await runDb(tester, () => DriftPetRepository(env.db).get('p1'));
+    expect(pet!.photoPath, 'attachments/k.jpg');
+    expect(file.existsSync(), isTrue);
     await unmount(tester);
   });
 }

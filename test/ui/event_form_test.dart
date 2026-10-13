@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:huellitas/data/drift_repositories.dart';
 import 'package:huellitas/ui/events/event_form_screen.dart';
 
+import '../helpers/io_helpers.dart';
 import '../helpers/pump_app.dart';
 import '../helpers/samples.dart';
 
@@ -86,6 +89,30 @@ void main() {
     final treatments = await runDb(tester, () => DriftTreatmentRepository(env.db).active());
     expect(treatments.map((t) => t.name).toSet(), {'Múltiple', 'Antirrábica'}); // cada una con su recordatorio
     expect(find.text('open'), findsOneWidget); // el último «Guardar» sí cierra
+    await unmount(tester);
+  });
+
+  testWidgets('quitar una foto adjunta antes de guardar: desaparece y se borra el archivo', (tester) async {
+    final env = await setup(tester);
+    env.pickedPhoto = (await tester.runAsync(() => writePng(env.docs, 'toma.png')))!;
+
+    await tester.ensureVisible(find.text('Adjuntar foto del carnet o recibo'));
+    await tester.tap(find.text('Adjuntar foto del carnet o recibo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Galería'));
+    await settleIo(tester);
+    await tester.pumpAndSettle();
+
+    final stored = env.docs.listSync(recursive: true).whereType<File>().where((f) => f.path.contains('attachments')).toList();
+    expect(stored, hasLength(1));
+    expect(find.byKey(const Key('removeAttachment_0')), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(const Key('removeAttachment_0')));
+    await tester.tap(find.byKey(const Key('removeAttachment_0')));
+    await settleIo(tester);
+
+    expect(find.byKey(const Key('removeAttachment_0')), findsNothing);
+    expect(stored.single.existsSync(), isFalse);
     await unmount(tester);
   });
 
