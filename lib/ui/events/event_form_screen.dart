@@ -55,6 +55,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   final _vet = TextEditingController();
   final _lot = TextEditingController();
   final _weight = TextEditingController();
+  final _scroll = ScrollController();
   final List<NewAttachment> _attachments = [];
   late String? _petId = widget.petId ?? ref.read(currentPetProvider)?.id;
   late EventType _type = widget.initialType ?? EventType.vaccine;
@@ -78,6 +79,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
     for (final c in [_title, _notes, _vet, _lot, _weight]) {
       c.dispose();
     }
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -126,7 +128,10 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
     }
   }
 
-  Future<void> _save() async {
+  /// Con [addAnother] guarda y deja el formulario listo para el siguiente
+  /// registro: conserva mascota, tipo, fecha, veterinario y recordatorio, y
+  /// limpia lo que es propio de cada vacuna (nombre, lote, notas, peso, fotos).
+  Future<void> _save({bool addAnother = false}) async {
     if (_saving || !_formKey.currentState!.validate()) return;
     if (_petId == null) {
       _snack('Primero agrega una mascota');
@@ -156,9 +161,25 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
               attachments: _attachments,
             ),
           );
-      _saved = true;
       await ref.read(reminderCoordinatorProvider).sync();
-      if (mounted) context.pop();
+      if (!mounted) return;
+      if (!addAnother) {
+        _saved = true;
+        context.pop();
+        return;
+      }
+      // Las fotos ya quedaron guardadas con el registro; no se borran al salir.
+      setState(() {
+        _attachments.clear();
+        _title.clear();
+        _lot.clear();
+        _notes.clear();
+        _weight.clear();
+        _freqIndex = 0;
+        _saving = false;
+      });
+      if (_scroll.hasClients) _scroll.jumpTo(0);
+      _snack('Guardada: $title. Agrega la siguiente.');
     } catch (_) {
       if (mounted) {
         setState(() => _saving = false);
@@ -209,6 +230,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
+            controller: _scroll,
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
               Center(
@@ -627,6 +649,18 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                 onPressed: _saving ? null : _save,
                 child: const Text('Guardar'),
               ),
+              if (_type.canRecur) ...[
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  key: const Key('saveAndAddAnother'),
+                  onPressed: _saving ? null : () => _save(addAnother: true),
+                  child: Text(
+                    _type == EventType.vaccine
+                        ? 'Guardar y agregar otra vacuna'
+                        : 'Guardar y agregar otro',
+                  ),
+                ),
+              ],
             ],
           ),
         ),

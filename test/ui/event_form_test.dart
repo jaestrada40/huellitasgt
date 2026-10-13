@@ -50,6 +50,45 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('guardar y agregar otra vacuna: dos registros separados, el formulario sigue abierto', (tester) async {
+    final env = await setup(tester);
+    Future<void> tapAddAnother() async {
+      await tester.ensureVisible(find.byKey(const Key('saveAndAddAnother')));
+      await tester.tap(find.byKey(const Key('saveAndAddAnother')));
+      await tester.pumpAndSettle();
+    }
+
+    await tester.enterText(find.byKey(const Key('eventTitleField')), 'Múltiple');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Veterinario o clínica (opcional)'), 'Dr. Chete');
+    await tester.ensureVisible(find.text('Cada 1 año'));
+    await tester.tap(find.text('Cada 1 año'));
+    await tester.pump();
+    await tapAddAnother();
+
+    // Sigue en el formulario, con lo propio de cada vacuna en blanco.
+    expect(find.text('open'), findsNothing);
+    expect(find.text('Guardada: Múltiple. Agrega la siguiente.'), findsOneWidget);
+    final title = tester.widget<TextFormField>(find.byKey(const Key('eventTitleField')));
+    expect(title.controller!.text, isEmpty);
+    expect(find.text('Dr. Chete'), findsOneWidget); // el veterinario se conserva
+
+    await tester.enterText(find.byKey(const Key('eventTitleField')), 'Antirrábica');
+    await tester.ensureVisible(find.text('Cada 1 año'));
+    await tester.tap(find.text('Cada 1 año'));
+    await tester.pump();
+    await tester.ensureVisible(find.text('Guardar'));
+    await tester.tap(find.text('Guardar'));
+    await tester.pumpAndSettle();
+
+    final events = await runDb(tester, () => DriftEventRepository(env.db).watchForPet('p1').first);
+    expect(events.map((e) => e.title).toSet(), {'Múltiple', 'Antirrábica'});
+    expect(events.every((e) => e.vetName == 'Dr. Chete'), isTrue);
+    final treatments = await runDb(tester, () => DriftTreatmentRepository(env.db).active());
+    expect(treatments.map((t) => t.name).toSet(), {'Múltiple', 'Antirrábica'}); // cada una con su recordatorio
+    expect(find.text('open'), findsOneWidget); // el último «Guardar» sí cierra
+    await unmount(tester);
+  });
+
   testWidgets('enfermedad no ofrece frecuencia de repetición', (tester) async {
     await setup(tester);
     expect(find.text('REPETIR'), findsOneWidget);
