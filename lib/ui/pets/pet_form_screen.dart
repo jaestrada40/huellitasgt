@@ -39,6 +39,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
   PetSex? _sex;
   bool _neutered = false;
   DateTime? _birth;
+  DateTime? _adopted;
   String? _photo;
   String? _originalPhoto;
   Alignment _focus = Alignment.center;
@@ -70,6 +71,7 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       _sex = p.sex;
       _neutered = p.neutered;
       _birth = p.birthDate;
+      _adopted = p.adoptionDate;
       _photo = _originalPhoto = p.photoPath;
       _focus = Alignment(p.photoFocusX, p.photoFocusY);
       _zoom = p.photoZoom;
@@ -102,6 +104,9 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   Future<void> _pickPhoto(ImageSource source) async {
+    // Sin campo con foco: si no, al volver de la cámara o la galería el iPhone
+    // reabre el teclado de ese campo y queda encima de la hoja de encuadre.
+    FocusManager.instance.primaryFocus?.unfocus();
     final picked = await ref.read(pickPhotoProvider)(source);
     if (picked == null) return;
     try {
@@ -138,6 +143,9 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
   Future<void> _adjustPhoto() async {
     final file = _photo == null ? null : _store.fileFor(_photo!);
     if (file == null || !file.existsSync()) return;
+    // Con el teclado abierto (venías escribiendo el nombre) tapaba los botones
+    // «Cancelar» y «Listo» de la hoja y no había cómo cerrarlo.
+    FocusManager.instance.primaryFocus?.unfocus();
     final result = await showModalBottomSheet<PhotoFraming>(
       context: context,
       isScrollControlled: true,
@@ -166,6 +174,17 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
     }
   }
 
+  Future<void> _pickAdopted() async {
+    final now = ref.read(clockProvider)();
+    final d = await showDatePicker(
+      context: context,
+      initialDate: _adopted ?? now,
+      firstDate: DateTime(1990),
+      lastDate: now,
+    );
+    if (d != null) setState(() => _adopted = DateTime.utc(d.year, d.month, d.day));
+  }
+
   String? _n(TextEditingController c) {
     final t = c.text.trim();
     return t.isEmpty ? null : t;
@@ -188,6 +207,8 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
       sex: _sex,
       neutered: _neutered,
       birthDate: _birth,
+      adoptionDate: _adopted,
+      memorialDate: _existing?.memorialDate,
       microchip: _n(_microchip),
       photoPath: _photo,
       photoFocusX: _focus.x,
@@ -276,6 +297,9 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
     final birthText = _birth == null
         ? 'Sin definir'
         : '${_birth!.day.toString().padLeft(2, '0')}/${_birth!.month.toString().padLeft(2, '0')}/${_birth!.year}';
+    final adoptedText = _adopted == null
+        ? 'Sin definir'
+        : '${_adopted!.day.toString().padLeft(2, '0')}/${_adopted!.month.toString().padLeft(2, '0')}/${_adopted!.year}';
     return Scaffold(
       body: SafeArea(
         child: Form(
@@ -477,6 +501,32 @@ class _PetFormScreenState extends ConsumerState<PetFormScreen> {
                         size: 20,
                         color: AppColors.ink,
                       ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                key: const Key('adoptionDateRow'),
+                borderRadius: BorderRadius.circular(AppRadius.field),
+                onTap: _pickAdopted,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.muted,
+                    borderRadius: BorderRadius.circular(AppRadius.field),
+                  ),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text('Día que llegó a casa', style: TextStyle(fontSize: 16, color: AppColors.ink)),
+                      ),
+                      Text(
+                        adoptedText,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.primary),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.home_outlined, size: 20, color: AppColors.ink),
                     ],
                   ),
                 ),

@@ -118,5 +118,54 @@ class PdfExporter {
     return doc.save();
   }
 
+  /// Cartel para imprimir o compartir. [photo] son los bytes de una imagen
+  /// JPEG/PNG de la mascota (opcional).
+  Future<Uint8List> lostPet({
+    required Pet pet,
+    required String contactPhone,
+    Uint8List? photo,
+    String? lastSeen,
+    String? ownerName,
+  }) async {
+    final doc = pw.Document();
+    final details = <String>[
+      switch (pet.species) {
+        PetSpecies.dog => 'Perro',
+        PetSpecies.cat => 'Gato',
+        PetSpecies.other => 'Mascota',
+      },
+      if (pet.breed != null) pet.breed!,
+      if (pet.sex != null) pet.sex == PetSex.male ? 'Macho' : 'Hembra',
+    ];
+    doc.addPage(pw.Page(
+      build: (_) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Text('SE BUSCA', style: pw.TextStyle(fontSize: 54, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 8),
+          pw.Text(pet.name, style: pw.TextStyle(fontSize: 40, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 16),
+          if (photo != null)
+            pw.Container(height: 320, child: pw.Image(pw.MemoryImage(photo), fit: pw.BoxFit.contain)),
+          pw.SizedBox(height: 16),
+          pw.Text(details.join(' - '), style: const pw.TextStyle(fontSize: 20)),
+          if (pet.microchip != null) pw.Text('Microchip: ${pet.microchip}', style: const pw.TextStyle(fontSize: 16)),
+          if (pet.allergiesNotes != null)
+            pw.Text('Importante: ${pet.allergiesNotes}', style: const pw.TextStyle(fontSize: 16)),
+          if (lastSeen != null && lastSeen.trim().isNotEmpty)
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(top: 8),
+              child: pw.Text('Visto por ultima vez: ${lastSeen.trim()}', style: const pw.TextStyle(fontSize: 16)),
+            ),
+          pw.Spacer(),
+          pw.Text('Si lo ves, por favor llama:', style: const pw.TextStyle(fontSize: 22)),
+          pw.Text(contactPhone, style: pw.TextStyle(fontSize: 44, fontWeight: pw.FontWeight.bold)),
+          if (ownerName != null && ownerName.isNotEmpty) pw.Text(ownerName, style: const pw.TextStyle(fontSize: 18)),
+        ],
+      ),
+    ));
+    return doc.save();
+  }
+
   String _next(Treatment? t) => (t != null && t.active) ? _day.format(t.nextDueDate) : '';
 }

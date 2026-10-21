@@ -11,6 +11,8 @@ import 'package:huellitas/data/database.dart';
 import 'package:huellitas/services/app_prefs.dart';
 import 'package:huellitas/services/attachment_store.dart';
 import 'package:huellitas/services/pin_store.dart';
+import 'package:huellitas/services/platform_hooks.dart' show RecognizedText;
+import 'package:huellitas/ui/pick_date_time.dart';
 import 'package:huellitas/ui/theme.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,8 +46,13 @@ class TestEnv {
   final DateTime now;
   final InMemorySecrets secrets;
   final List<String> shared = [];
+  final List<Uri> opened = [];
   File? pickedBackup;
   File? pickedPhoto;
+  void Function()? onPickPhoto; // se llama justo cuando se abre la cámara o la galería
+  DateTime? pickedDateTime; // lo que «elegiría» la rueda de fecha y hora
+  String? recognizedText; // lo que «leería» el OCR de la foto
+  double recognizedConfidence = 0.95; // letra impresa; a mano sería mucho menos
   int _ids = 0;
 
   /// Agregar aquí los overrides de providers que se creen en tareas posteriores.
@@ -58,9 +65,20 @@ class TestEnv {
         clockProvider.overrideWithValue(() => now),
         idGeneratorProvider.overrideWithValue(() => 'id${_ids++}'),
         shareFileProvider.overrideWithValue((path) async => shared.add(path)),
+        openUriProvider.overrideWithValue((uri) async {
+          opened.add(uri);
+          return true;
+        }),
+        recognizeTextProvider.overrideWithValue(
+            (_) async => recognizedText == null ? null : RecognizedText(recognizedText!, recognizedConfidence)),
+        pickDateTimeProvider.overrideWithValue((_, initial) async => pickedDateTime ?? initial),
         biometricAuthProvider.overrideWithValue(() async => false),
         pickBackupFileProvider.overrideWithValue(() async => pickedBackup),
-        pickPhotoProvider.overrideWithValue((_) async => pickedPhoto),
+        pickPhotoProvider.overrideWithValue((_) async {
+          await Future<void>.microtask(() {}); // el cambio de foco se aplica en un microtask
+          onPickPhoto?.call();
+          return pickedPhoto;
+        }),
         // Sin la compresión nativa: copia el archivo tal cual.
         attachmentStoreProvider.overrideWith((ref) => AttachmentStore(
               root: docs,

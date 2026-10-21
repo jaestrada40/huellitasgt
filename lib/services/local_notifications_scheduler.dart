@@ -35,7 +35,7 @@ class LocalNotificationsScheduler implements ReminderScheduler {
       android: AndroidNotificationDetails(
         'treatments',
         'Recordatorios de salud',
-        channelDescription: 'Avisos de vacunas, desparasitación y antipulgas',
+        channelDescription: 'Avisos de vacunas, medicinas, comida y cumpleaños',
         importance: Importance.high,
         priority: Priority.high,
       ),

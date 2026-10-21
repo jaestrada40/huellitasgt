@@ -7,7 +7,9 @@ import '../../app/providers.dart';
 import '../../domain/age.dart';
 import '../../domain/enums.dart';
 import '../../domain/models.dart';
+import '../../domain/dates.dart';
 import '../format.dart';
+import '../pets/lost_pet_sheet.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -33,6 +35,32 @@ class ProfileScreen extends ConsumerWidget {
     ref.read(homeFilterProvider.notifier).select(null);
     await ref.read(reminderCoordinatorProvider).sync();
     if (context.mounted) context.go('/pets');
+  }
+
+  Future<void> _memorial(BuildContext context, WidgetRef ref, Pet pet) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Honrar la memoria de ${pet.name}'),
+        content: const Text(
+            'Dejará de generar avisos y se apagan sus vacunas y medicinas. Su historial y sus fotos se conservan.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Confirmar')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(petRepoProvider).save(pet.withMemorial(dateOnly(ref.read(clockProvider)())));
+    final treatments = ref.read(treatmentRepoProvider);
+    for (final t in await treatments.active()) {
+      if (t.petId == pet.id) await treatments.save(t.copyWith(active: false));
+    }
+    final meds = ref.read(medicationRepoProvider);
+    for (final m in await meds.all()) {
+      if (m.petId == pet.id && m.active) await meds.setActive(m.id, false);
+    }
+    await ref.read(reminderCoordinatorProvider).sync();
   }
 
   @override
@@ -68,8 +96,13 @@ class ProfileScreen extends ConsumerWidget {
       if (pet.neutered) (Icons.check_circle_outline, 'Esterilizado', 'Sí', null),
       if (pet.allergiesNotes != null) (Icons.warning_amber_rounded, 'Alergias', pet.allergiesNotes!, null),
       if (pet.vetName != null) (Icons.medical_services_outlined, 'Veterinario', pet.vetName!, null),
-      if (pet.vetClinic != null) (Icons.local_hospital_outlined, 'Clínica', pet.vetClinic!, null),
-      if (pet.vetPhone != null) (Icons.phone_outlined, 'Teléfono', pet.vetPhone!, null),
+      if (pet.vetClinic != null)
+        (Icons.local_hospital_outlined, 'Clínica', pet.vetClinic!, () => ref.read(openUriProvider)(Uri.https(
+            'www.google.com', '/maps/search/', {'api': '1', 'query': pet.vetClinic!}))),
+      if (pet.vetPhone != null)
+        (Icons.phone_outlined, 'Llamar', pet.vetPhone!, () => ref.read(openUriProvider)(Uri(scheme: 'tel', path: pet.vetPhone!))),
+      if (pet.adoptionDate != null)
+        (Icons.home_outlined, 'Llegó a casa', fmtDay(pet.adoptionDate!), null),
     ];
 
     return Scaffold(
@@ -119,6 +152,18 @@ class ProfileScreen extends ConsumerWidget {
               Text(pet.name, style: AppText.h1),
               Text('${speciesLabel(pet.species)}${pet.breed == null ? '' : ' · ${pet.breed}'}',
                   style: const TextStyle(fontSize: 16, color: AppColors.inkSoft)),
+              if (pet.inMemoriam)
+                AppCard(
+                  color: AppColors.peach,
+                  child: Row(children: [
+                    const Icon(Icons.favorite_rounded, color: AppColors.orangeText),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text('En memoria desde ${fmtDay(pet.memorialDate!)}',
+                          style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.orangeText)),
+                    ),
+                  ]),
+                ),
               const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -176,21 +221,28 @@ class ProfileScreen extends ConsumerWidget {
                   ]),
                 ),
               const SizedBox(height: 4),
-              AppCard(
-                onTap: () => context.push('/pets/${pet.id}/carnet'),
-                child: const Row(children: [
-                  Icon(Icons.badge_outlined, color: AppColors.primary),
-                  SizedBox(width: 12),
-                  Expanded(child: Text('Carnet de vacunación', style: AppText.cardTitle)),
-                  Icon(Icons.chevron_right_rounded, color: AppColors.inkSoft),
-                ]),
-              ),
+              _LinkCard(Icons.badge_outlined, 'Carnet de vacunación', () => context.push('/pets/${pet.id}/carnet')),
+              if (!pet.inMemoriam) ...[
+                _LinkCard(Icons.medication_outlined, 'Medicinas y recetas', () => context.push('/pets/${pet.id}/meds')),
+                _LinkCard(Icons.checklist_rounded, 'Rutinas (paseo, baño, uñas)', () => context.push('/pets/${pet.id}/routines')),
+                _LinkCard(Icons.restaurant_outlined, 'Comida', () => context.push('/pets/${pet.id}/food')),
+                _LinkCard(Icons.savings_outlined, 'Gastos', () => context.push('/pets/${pet.id}/expenses')),
+                _LinkCard(Icons.campaign_outlined, 'Cartel de mascota perdida', () => showLostPetSheet(context, pet)),
+              ],
               Center(
-                child: TextButton(
-                  style: TextButton.styleFrom(foregroundColor: AppColors.coral),
-                  onPressed: () => _archive(context, ref, pet),
-                  child: const Text('Archivar mascota'),
-                ),
+                child: Wrap(alignment: WrapAlignment.center, children: [
+                  if (!pet.inMemoriam)
+                    TextButton(
+                      key: const Key('memorialButton'),
+                      onPressed: () => _memorial(context, ref, pet),
+                      child: const Text('En memoria'),
+                    ),
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: AppColors.coral),
+                    onPressed: () => _archive(context, ref, pet),
+                    child: const Text('Archivar mascota'),
+                  ),
+                ]),
               ),
             ]),
           ),
@@ -220,5 +272,24 @@ class _StatCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink)),
           ]),
         ),
+      );
+}
+
+class _LinkCard extends StatelessWidget {
+  const _LinkCard(this.icon, this.label, this.onTap);
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+        onTap: onTap,
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Row(children: [
+          Icon(icon, color: AppColors.primary),
+          const SizedBox(width: 12),
+          Expanded(child: Text(label, style: AppText.cardTitle)),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.inkSoft),
+        ]),
       );
 }

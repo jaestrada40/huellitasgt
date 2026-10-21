@@ -23,6 +23,8 @@ Pet petFromRow(PetRow r) => Pet(
       vetName: r.vetName,
       vetClinic: r.vetClinic,
       vetPhone: r.vetPhone,
+      adoptionDate: r.adoptionDate?.toUtc(),
+      memorialDate: r.memorialDate?.toUtc(),
       createdAt: r.createdAt.toLocal(),
       archived: r.archived,
     );
@@ -45,6 +47,8 @@ PetsCompanion petToCompanion(Pet p) => PetsCompanion.insert(
       vetName: Value(p.vetName),
       vetClinic: Value(p.vetClinic),
       vetPhone: Value(p.vetPhone),
+      adoptionDate: Value(p.adoptionDate),
+      memorialDate: Value(p.memorialDate),
       archived: Value(p.archived),
     );
 
@@ -136,4 +140,91 @@ AttachmentsCompanion attachmentToCompanion(Attachment a) => AttachmentsCompanion
       relativePath: a.relativePath,
       kind: a.kind,
       label: Value(a.label),
+    );
+
+Medication medicationFromRow(MedicationRow r) => Medication(
+      id: r.id,
+      petId: r.petId,
+      eventId: r.eventId,
+      name: r.name,
+      instructions: r.instructions,
+      everyHours: r.everyHours,
+      startAt: r.startAt.toLocal(),
+      days: r.days,
+      reminderEnabled: r.reminderEnabled,
+      active: r.active,
+    );
+
+MedicationsCompanion medicationToCompanion(Medication m) => MedicationsCompanion.insert(
+      id: m.id,
+      petId: m.petId,
+      name: m.name,
+      everyHours: m.everyHours,
+      startAt: m.startAt,
+      days: m.days,
+      eventId: Value(m.eventId),
+      instructions: Value(m.instructions),
+      reminderEnabled: Value(m.reminderEnabled),
+      active: Value(m.active),
+    );
+
+DoseLog doseLogFromRow(DoseLogRow r) =>
+    DoseLog(medicationId: r.medicationId, doseIndex: r.doseIndex, givenAt: r.givenAt.toLocal());
+
+DoseLogsCompanion doseLogToCompanion(DoseLog l) => DoseLogsCompanion.insert(
+      medicationId: l.medicationId,
+      doseIndex: l.doseIndex,
+      givenAt: l.givenAt,
+    );
+
+Routine routineFromRow(RoutineRow r) => Routine(
+      id: r.id,
+      petId: r.petId,
+      name: r.name,
+      everyDays: r.everyDays,
+      lastDoneAt: r.lastDoneAt?.toLocal(),
+    );
+
+RoutinesCompanion routineToCompanion(Routine r) => RoutinesCompanion.insert(
+      id: r.id,
+      petId: r.petId,
+      name: r.name,
+      everyDays: r.everyDays,
+      lastDoneAt: Value(r.lastDoneAt),
+    );
+
+FoodStock foodFromRow(FoodRow r) => FoodStock(
+      id: r.id,
+      petId: r.petId,
+      brand: r.brand,
+      bagKg: r.bagKg,
+      gramsPerDay: r.gramsPerDay,
+      openedOn: r.openedOn.toUtc(),
+    );
+
+FoodStocksCompanion foodToCompanion(FoodStock f) => FoodStocksCompanion.insert(
+      id: f.id,
+      petId: f.petId,
+      brand: f.brand,
+      bagKg: f.bagKg,
+      gramsPerDay: f.gramsPerDay,
+      openedOn: f.openedOn,
+    );
+
+Expense expenseFromRow(ExpenseRow r) => Expense(
+      id: r.id,
+      petId: r.petId,
+      date: r.date.toUtc(),
+      amount: r.amount,
+      category: r.category,
+      note: r.note,
+    );
+
+ExpensesCompanion expenseToCompanion(Expense e) => ExpensesCompanion.insert(
+      id: e.id,
+      petId: e.petId,
+      date: e.date,
+      amount: e.amount,
+      category: e.category,
+      note: Value(e.note),
     );

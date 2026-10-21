@@ -66,7 +66,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           children: [
             Row(
               children: [
-                const Expanded(child: Text('Historial', style: AppText.h1)),
+                const Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Historial', style: AppText.h1),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 TextButton.icon(
                   key: const Key('exportHistoryPdf'),
                   style: TextButton.styleFrom(

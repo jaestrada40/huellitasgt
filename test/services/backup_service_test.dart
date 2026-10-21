@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:huellitas/data/database.dart';
 import 'package:huellitas/data/drift_backup_store.dart';
 import 'package:huellitas/domain/backup_data.dart';
+import 'package:huellitas/domain/enums.dart';
+import 'package:huellitas/domain/models.dart';
 import 'package:huellitas/services/backup_codec.dart';
 import 'package:huellitas/services/backup_service.dart';
 
@@ -45,6 +47,24 @@ void main() {
       treatments: [sampleTreatment()],
       events: [sampleEvent(treatmentId: 't1')],
       attachments: [sampleAttachment()],
+      medications: [
+        Medication(
+          id: 'm1',
+          petId: 'p1',
+          eventId: 'e1',
+          name: 'Numelvi',
+          instructions: '1 tableta cada 24 hrs',
+          everyHours: 24,
+          days: 21,
+          startAt: DateTime(2024, 10, 19, 12),
+        ),
+      ],
+      doseLogs: [DoseLog(medicationId: 'm1', doseIndex: 0, givenAt: DateTime(2024, 10, 19, 12, 3))],
+      routines: [Routine(id: 'r1', petId: 'p1', name: 'Baño', everyDays: 15, lastDoneAt: DateTime(2024, 10, 1, 9))],
+      foods: [FoodStock(id: 'f1', petId: 'p1', brand: 'Pro Plan', bagKg: 15, gramsPerDay: 300, openedOn: DateTime.utc(2024, 10, 1))],
+      expenses: [
+        Expense(id: 'x1', petId: 'p1', date: DateTime.utc(2024, 10, 3), amount: 150.5, category: ExpenseCategory.vet, note: 'Consulta'),
+      ],
     ));
   }
 
@@ -99,6 +119,11 @@ void main() {
     final a = await DriftBackupStore(dbA).readAll();
     final c = await DriftBackupStore(dbB).readAll();
     expect(canonical(c), canonical(a));
+    expect(c.medications.single.name, 'Numelvi');
+    expect(c.doseLogs.single.doseIndex, 0);
+    expect(c.routines.single.everyDays, 15);
+    expect(c.foods.single.brand, 'Pro Plan');
+    expect(c.expenses.single.amount, 150.5);
     expect(File('${rootB.path}/attachments/a1.jpg').readAsStringSync(), 'foto-carnet');
     expect(File('${rootB.path}/attachments/pet1.jpg').readAsStringSync(), 'foto-mascota');
     expect(Directory('${rootB.path}/.import_tmp').existsSync(), isFalse);
@@ -124,6 +149,24 @@ void main() {
     expect((await DriftBackupStore(dbB).readAll()).pets.map((p) => p.id), ['p1']);
     expect(File('${rootB.path}/attachments/viejo.jpg').existsSync(), isFalse);
     expect(Directory('${rootB.path}/attachments.old').existsSync(), isFalse);
+  });
+
+  test('un respaldo de la versión 1 (sin medicinas, rutinas, comida ni gastos) se importa', () async {
+    final j = json();
+    for (final k in ['medications', 'doseLogs', 'routines', 'foods', 'expenses']) {
+      j.remove(k);
+    }
+    for (final p in (j['pets'] as List).cast<Map<String, dynamic>>()) {
+      p.remove('adoptionDate');
+      p.remove('memorialDate');
+    }
+    j['schemaVersion'] = 1;
+    final zip = zipWith({'backup.json': utf8.encode(jsonEncode(j))}, 'v1.zip');
+    final b = serviceFor(dbB, rootB);
+    await b.commit(await b.prepare(zip));
+    final data = await DriftBackupStore(dbB).readAll();
+    expect(data.pets.single.adoptionDate, isNull);
+    expect(data.medications, isEmpty);
   });
 
   test('un respaldo de versión más nueva se rechaza', () async {

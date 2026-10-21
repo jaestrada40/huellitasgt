@@ -19,6 +19,8 @@ class Pet {
     this.vetName,
     this.vetClinic,
     this.vetPhone,
+    this.adoptionDate,
+    this.memorialDate,
     this.archived = false,
   });
 
@@ -39,7 +41,34 @@ class Pet {
   final String? vetName;
   final String? vetClinic;
   final String? vetPhone;
+  final DateTime? adoptionDate; // día calendario (UTC): «gotcha day»
+  final DateTime? memorialDate; // día calendario (UTC): ya no está con nosotros
   final bool archived;
+
+  bool get inMemoriam => memorialDate != null;
+
+  Pet withMemorial(DateTime day) => Pet(
+        id: id,
+        name: name,
+        species: species,
+        createdAt: createdAt,
+        breed: breed,
+        sex: sex,
+        neutered: neutered,
+        birthDate: birthDate,
+        microchip: microchip,
+        photoPath: photoPath,
+        photoFocusX: photoFocusX,
+        photoFocusY: photoFocusY,
+        photoZoom: photoZoom,
+        allergiesNotes: allergiesNotes,
+        vetName: vetName,
+        vetClinic: vetClinic,
+        vetPhone: vetPhone,
+        adoptionDate: adoptionDate,
+        memorialDate: day,
+        archived: archived,
+      );
 }
 
 class WeightEntry {
@@ -151,4 +180,102 @@ class Attachment {
   final String relativePath;
   final AttachmentKind kind;
   final String? label;
+}
+
+class Medication {
+  const Medication({
+    required this.id,
+    required this.petId,
+    required this.name,
+    required this.everyHours,
+    required this.startAt,
+    required this.days,
+    this.eventId,
+    this.instructions,
+    this.reminderEnabled = true,
+    this.active = true,
+  });
+
+  final String id;
+  final String petId;
+  final String? eventId;
+  final String name;
+  final String? instructions;
+  final int everyHours;
+  final DateTime startAt; // instante (hora local) de la primera dosis
+  final int days;
+  final bool reminderEnabled;
+  final bool active;
+
+  Medication copyWith({bool? active, int? everyHours, DateTime? startAt, int? days}) => Medication(
+        id: id,
+        petId: petId,
+        eventId: eventId,
+        name: name,
+        instructions: instructions,
+        everyHours: everyHours ?? this.everyHours,
+        startAt: startAt ?? this.startAt,
+        days: days ?? this.days,
+        reminderEnabled: reminderEnabled,
+        active: active ?? this.active,
+      );
+}
+
+class DoseLog {
+  const DoseLog({required this.medicationId, required this.doseIndex, required this.givenAt});
+  final String medicationId;
+  final int doseIndex;
+  final DateTime givenAt;
+}
+
+class Routine {
+  const Routine({
+    required this.id,
+    required this.petId,
+    required this.name,
+    required this.everyDays,
+    this.lastDoneAt,
+  });
+
+  final String id;
+  final String petId;
+  final String name;
+  final int everyDays;
+  final DateTime? lastDoneAt; // instante (hora local)
+}
+
+class FoodStock {
+  const FoodStock({
+    required this.id,
+    required this.petId,
+    required this.brand,
+    required this.bagKg,
+    required this.gramsPerDay,
+    required this.openedOn,
+  });
+
+  final String id;
+  final String petId;
+  final String brand;
+  final double bagKg;
+  final int gramsPerDay;
+  final DateTime openedOn; // día calendario (UTC)
+}
+
+class Expense {
+  const Expense({
+    required this.id,
+    required this.petId,
+    required this.date,
+    required this.amount,
+    required this.category,
+    this.note,
+  });
+
+  final String id;
+  final String petId;
+  final DateTime date; // día calendario (UTC)
+  final double amount;
+  final ExpenseCategory category;
+  final String? note;
 }

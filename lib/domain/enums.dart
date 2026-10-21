@@ -8,6 +8,18 @@ enum IntervalUnit { days, weeks, months, years }
 
 enum AttachmentKind { image, pdf }
 
+enum ExpenseCategory { vet, food, grooming, accessories, other }
+
+extension ExpenseCategoryInfo on ExpenseCategory {
+  String get label => switch (this) {
+        ExpenseCategory.vet => 'Veterinario',
+        ExpenseCategory.food => 'Comida',
+        ExpenseCategory.grooming => 'Baño y peluquería',
+        ExpenseCategory.accessories => 'Accesorios',
+        ExpenseCategory.other => 'Otros',
+      };
+}
+
 extension EventTypeInfo on EventType {
   bool get canRecur =>
       this == EventType.vaccine ||

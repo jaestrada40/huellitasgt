@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../domain/enums.dart';
+import '../ui/care/expenses_screen.dart';
+import '../ui/care/food_screen.dart';
+import '../ui/care/routines_screen.dart';
 import '../ui/carnet/carnet_screen.dart';
 import '../ui/events/event_detail_screen.dart';
 import '../ui/events/event_form_screen.dart';
 import '../ui/history/history_screen.dart';
 import '../ui/home/home_screen.dart';
 import '../ui/theme.dart';
+import '../ui/meds/meds_screen.dart';
+import '../ui/meds/prescription_screen.dart';
 import '../ui/onboarding/onboarding_screen.dart';
 import '../ui/profile/profile_screen.dart';
 import '../ui/profile/weight_screen.dart';
@@ -88,6 +93,31 @@ GoRouter buildRouter({required String initialLocation}) => GoRouter(
           path: '/pets/:id/carnet',
           parentNavigatorKey: rootNavigatorKey,
           builder: (_, s) => CarnetScreen(petId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/pets/:id/meds',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => MedsScreen(petId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/pets/:id/prescription',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => PrescriptionScreen(petId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/pets/:id/routines',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => RoutinesScreen(petId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/pets/:id/food',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => FoodScreen(petId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/pets/:id/expenses',
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (_, s) => ExpensesScreen(petId: s.pathParameters['id']!),
         ),
         GoRoute(
           path: '/pets/:id/weight',

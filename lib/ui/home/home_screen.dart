@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../domain/enums.dart';
 import '../../domain/home_logic.dart';
+import '../../domain/medication_logic.dart';
 import '../../domain/models.dart';
 import '../../domain/treatment_status.dart';
 import '../format.dart';
+import '../meds/dose_tile.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -55,6 +57,12 @@ class HomeScreen extends ConsumerWidget {
         if (selected == null || p.id == selected.id)
           ...(ref.watch(eventsForPetProvider(p.id)).asData?.value ?? const <HealthEvent>[]),
     ];
+    final doses = pendingDoses(
+      (ref.watch(medicationsProvider).asData?.value ?? const <Medication>[])
+          .where((m) => names.containsKey(m.petId) && (selected == null || m.petId == selected.id)),
+      ref.watch(doseLogsProvider).asData?.value ?? const <DoseLog>[],
+      now,
+    );
     final sections = homeSections(all, now);
     final notificationsOk = ref.watch(notificationsAllowedProvider).asData?.value ?? true;
     final remindBackup = needsBackupReminder(
@@ -99,6 +107,12 @@ class HomeScreen extends ConsumerWidget {
                 onTap: () => context.go('/settings'),
                 child: const Text('Haz un respaldo para no perder el historial si cambias de teléfono.'),
               ),
+            if (doses.isNotEmpty) ...[
+              const Text('Medicinas', style: AppText.h2),
+              const SizedBox(height: 12),
+              for (final d in doses) DoseTile(dose: d, petName: pets.length > 1 ? names[d.medication.petId] : null),
+              const SizedBox(height: 12),
+            ],
             Row(children: [
               const Expanded(child: Text('Lo que toca pronto', style: AppText.h2)),
               if (pending > 0) Text('$pending ${pending == 1 ? 'pendiente' : 'pendientes'}', style: AppText.bodyStrong),

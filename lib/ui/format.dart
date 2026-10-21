@@ -27,6 +27,12 @@ String fmtLongDate(DateTime d) => DateFormat("EEEE, d 'de' MMMM", 'es_MX').forma
 /// «9 oct»
 String fmtShortDay(DateTime d) => DateFormat('d MMM', 'es_MX').format(d).replaceAll('.', '');
 
+/// `null` si [at] es hoy; si no, «mañana» o «23 oct».
+String? fmtDoseDay(DateTime at, DateTime now) {
+  final days = DateTime(at.year, at.month, at.day).difference(DateTime(now.year, now.month, now.day)).inDays;
+  return switch (days) { 0 => null, 1 => 'mañana', _ => fmtShortDay(at) };
+}
+
 String greeting(String? name) => (name == null || name.isEmpty) ? 'Hola' : 'Hola, $name';
 
 String frequencyLabel(int value, IntervalUnit unit) {

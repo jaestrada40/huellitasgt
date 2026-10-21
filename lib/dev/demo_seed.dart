@@ -16,6 +16,12 @@ const bool kTour = bool.fromEnvironment('TOUR');
 
 const List<String> kTourRoutes = [
   '/home',
+  '/pets/canela',
+  '/pets/canela/meds',
+  '/pets/canela/prescription',
+  '/pets/canela/routines',
+  '/pets/canela/food',
+  '/pets/canela/expenses',
   '/history',
   '/pets',
   '/pets/canela',
@@ -99,6 +105,17 @@ Future<void> seedDemo(AppDatabase db, AppPrefs prefs) async {
     notes: 'Todo en orden. Limpieza dental sugerida.',
     weightKg: 28.4,
   ));
+  final start = DateTime(now.year, now.month, now.day, 8);
+  await DriftMedicationRepository(db).saveAll([
+    Medication(id: 'demo-m1', petId: 'canela', name: 'Numelvi', instructions: '1 tableta cada 24 hrs por 3 semanas', everyHours: 24, days: 21, startAt: start),
+    Medication(id: 'demo-m2', petId: 'canela', name: 'Kiroftal ciproxyn', instructions: '2 gotas en el ojo derecho cada 12 hrs', everyHours: 12, days: 7, startAt: start),
+  ]);
+  final care = DriftCareRepository(db);
+  await care.saveRoutine(Routine(id: 'demo-r1', petId: 'canela', name: 'Baño', everyDays: 15, lastDoneAt: now.subtract(const Duration(days: 9))));
+  await care.saveRoutine(Routine(id: 'demo-r2', petId: 'canela', name: 'Cortar uñas', everyDays: 21, lastDoneAt: now.subtract(const Duration(days: 30))));
+  await care.saveFood(FoodStock(id: 'demo-f1', petId: 'canela', brand: 'Pro Plan', bagKg: 15, gramsPerDay: 320, openedOn: today.subtract(const Duration(days: 20))));
+  await care.saveExpense(Expense(id: 'demo-x1', petId: 'canela', date: today.subtract(const Duration(days: 2)), amount: 250, category: ExpenseCategory.vet, note: 'Consulta'));
+  await care.saveExpense(Expense(id: 'demo-x2', petId: 'canela', date: today.subtract(const Duration(days: 5)), amount: 480.5, category: ExpenseCategory.food));
   await health.logEvent(LogEventInput(
     petId: 'mango',
     type: EventType.illness,

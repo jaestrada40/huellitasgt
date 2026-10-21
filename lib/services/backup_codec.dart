@@ -2,7 +2,7 @@ import '../domain/backup_data.dart';
 import '../domain/enums.dart';
 import '../domain/models.dart';
 
-const int kBackupSchemaVersion = 1;
+const int kBackupSchemaVersion = 2;
 
 // Instantes se guardan en UTC y se leen en hora local; los días calendario se
 // guardan y leen como medianoche UTC.
@@ -40,6 +40,8 @@ Map<String, dynamic> backupToJson(
             'vetName': p.vetName,
             'vetClinic': p.vetClinic,
             'vetPhone': p.vetPhone,
+            'adoptionDate': p.adoptionDate == null ? null : _iso(p.adoptionDate!),
+            'memorialDate': p.memorialDate == null ? null : _iso(p.memorialDate!),
             'createdAt': _iso(p.createdAt),
             'archived': p.archived,
           },
@@ -91,11 +93,63 @@ Map<String, dynamic> backupToJson(
             'label': a.label,
           },
       ],
+      'medications': [
+        for (final m in d.medications)
+          {
+            'id': m.id,
+            'petId': m.petId,
+            'eventId': m.eventId,
+            'name': m.name,
+            'instructions': m.instructions,
+            'everyHours': m.everyHours,
+            'startAt': _iso(m.startAt),
+            'days': m.days,
+            'reminderEnabled': m.reminderEnabled,
+            'active': m.active,
+          },
+      ],
+      'doseLogs': [
+        for (final l in d.doseLogs)
+          {'medicationId': l.medicationId, 'doseIndex': l.doseIndex, 'givenAt': _iso(l.givenAt)},
+      ],
+      'routines': [
+        for (final r in d.routines)
+          {
+            'id': r.id,
+            'petId': r.petId,
+            'name': r.name,
+            'everyDays': r.everyDays,
+            'lastDoneAt': r.lastDoneAt == null ? null : _iso(r.lastDoneAt!),
+          },
+      ],
+      'foods': [
+        for (final f in d.foods)
+          {
+            'id': f.id,
+            'petId': f.petId,
+            'brand': f.brand,
+            'bagKg': f.bagKg,
+            'gramsPerDay': f.gramsPerDay,
+            'openedOn': _iso(f.openedOn),
+          },
+      ],
+      'expenses': [
+        for (final e in d.expenses)
+          {
+            'id': e.id,
+            'petId': e.petId,
+            'date': _iso(e.date),
+            'amount': e.amount,
+            'category': e.category.name,
+            'note': e.note,
+          },
+      ],
     };
 
 BackupData backupFromJson(Map<String, dynamic> j) {
+  // Los respaldos de la versión 1 no traen las listas nuevas.
   List<Map<String, dynamic>> list(String key) =>
-      (j[key] as List).cast<Map<String, dynamic>>();
+      ((j[key] ?? const <Object?>[]) as List).cast<Map<String, dynamic>>();
 
   return BackupData(
     pets: [
@@ -118,6 +172,8 @@ BackupData backupFromJson(Map<String, dynamic> j) {
           vetName: m['vetName'] as String?,
           vetClinic: m['vetClinic'] as String?,
           vetPhone: m['vetPhone'] as String?,
+          adoptionDate: m['adoptionDate'] == null ? null : _day(m['adoptionDate']),
+          memorialDate: m['memorialDate'] == null ? null : _day(m['memorialDate']),
           createdAt: _instant(m['createdAt']),
           archived: m['archived'] as bool,
         ),
@@ -173,6 +229,61 @@ BackupData backupFromJson(Map<String, dynamic> j) {
           relativePath: m['relativePath'] as String,
           kind: AttachmentKind.values.byName(m['kind'] as String),
           label: m['label'] as String?,
+        ),
+    ],
+    medications: [
+      for (final m in list('medications'))
+        Medication(
+          id: m['id'] as String,
+          petId: m['petId'] as String,
+          eventId: m['eventId'] as String?,
+          name: m['name'] as String,
+          instructions: m['instructions'] as String?,
+          everyHours: m['everyHours'] as int,
+          startAt: _instant(m['startAt']),
+          days: m['days'] as int,
+          reminderEnabled: m['reminderEnabled'] as bool,
+          active: m['active'] as bool,
+        ),
+    ],
+    doseLogs: [
+      for (final m in list('doseLogs'))
+        DoseLog(
+          medicationId: m['medicationId'] as String,
+          doseIndex: m['doseIndex'] as int,
+          givenAt: _instant(m['givenAt']),
+        ),
+    ],
+    routines: [
+      for (final m in list('routines'))
+        Routine(
+          id: m['id'] as String,
+          petId: m['petId'] as String,
+          name: m['name'] as String,
+          everyDays: m['everyDays'] as int,
+          lastDoneAt: m['lastDoneAt'] == null ? null : _instant(m['lastDoneAt']),
+        ),
+    ],
+    foods: [
+      for (final m in list('foods'))
+        FoodStock(
+          id: m['id'] as String,
+          petId: m['petId'] as String,
+          brand: m['brand'] as String,
+          bagKg: (m['bagKg'] as num).toDouble(),
+          gramsPerDay: m['gramsPerDay'] as int,
+          openedOn: _day(m['openedOn']),
+        ),
+    ],
+    expenses: [
+      for (final m in list('expenses'))
+        Expense(
+          id: m['id'] as String,
+          petId: m['petId'] as String,
+          date: _day(m['date']),
+          amount: (m['amount'] as num).toDouble(),
+          category: ExpenseCategory.values.byName(m['category'] as String),
+          note: m['note'] as String?,
         ),
     ],
   );

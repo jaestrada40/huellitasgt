@@ -21,6 +21,8 @@ class Pets extends Table {
   TextColumn get vetName => text().nullable()();
   TextColumn get vetClinic => text().nullable()();
   TextColumn get vetPhone => text().nullable()();
+  DateTimeColumn get adoptionDate => dateTime().nullable()();
+  DateTimeColumn get memorialDate => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   BoolColumn get archived => boolean().withDefault(const Constant(false))();
 
@@ -84,6 +86,72 @@ class Attachments extends Table {
   TextColumn get relativePath => text()();
   TextColumn get kind => textEnum<AttachmentKind>()();
   TextColumn get label => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('MedicationRow')
+class Medications extends Table {
+  TextColumn get id => text()();
+  TextColumn get petId => text()();
+  // Receta (registro con la foto) de la que salió; nula si se capturó a mano.
+  TextColumn get eventId => text().nullable()();
+  TextColumn get name => text()();
+  TextColumn get instructions => text().nullable()();
+  IntColumn get everyHours => integer()();
+  DateTimeColumn get startAt => dateTime()(); // primera dosis (instante)
+  IntColumn get days => integer()();
+  BoolColumn get reminderEnabled => boolean().withDefault(const Constant(true))();
+  BoolColumn get active => boolean().withDefault(const Constant(true))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('DoseLogRow')
+class DoseLogs extends Table {
+  TextColumn get medicationId => text()();
+  IntColumn get doseIndex => integer()();
+  DateTimeColumn get givenAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {medicationId, doseIndex};
+}
+
+@DataClassName('RoutineRow')
+class Routines extends Table {
+  TextColumn get id => text()();
+  TextColumn get petId => text()();
+  TextColumn get name => text()();
+  IntColumn get everyDays => integer()();
+  DateTimeColumn get lastDoneAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('FoodRow')
+class FoodStocks extends Table {
+  TextColumn get id => text()();
+  TextColumn get petId => text()();
+  TextColumn get brand => text()();
+  RealColumn get bagKg => real()();
+  IntColumn get gramsPerDay => integer()();
+  DateTimeColumn get openedOn => dateTime()(); // día calendario
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('ExpenseRow')
+class Expenses extends Table {
+  TextColumn get id => text()();
+  TextColumn get petId => text()();
+  DateTimeColumn get date => dateTime()(); // día calendario
+  RealColumn get amount => real()();
+  TextColumn get category => textEnum<ExpenseCategory>()();
+  TextColumn get note => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

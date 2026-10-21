@@ -29,6 +29,19 @@ void main() {
     expect(isPdf(bytes), isTrue);
   });
 
+  test('cartel de mascota perdida, con y sin foto, genera PDF', () async {
+    expect(isPdf(await exporter.lostPet(pet: samplePet(), contactPhone: '5555-1234')), isTrue);
+    expect(
+      isPdf(await exporter.lostPet(
+        pet: samplePet(name: 'Ñandú'),
+        contactPhone: '5555-1234',
+        lastSeen: 'Parque de la colonia',
+        ownerName: 'Javiera',
+      )),
+      isTrue,
+    );
+  });
+
   test('carnet con y sin tratamiento asociado genera PDF', () async {
     final bytes = await exporter.carnet(
       pet: samplePet(),

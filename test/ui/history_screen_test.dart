@@ -56,4 +56,18 @@ void main() {
     expect(find.text('Aún no hay registros'), findsOneWidget);
     await unmount(tester);
   });
+
+  testWidgets('en un teléfono angosto con letra grande el título «Historial» no se parte en dos líneas', (tester) async {
+    tester.view.physicalSize = const Size(375, 800);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final env = await createEnv();
+    await runDb(tester, () => DriftPetRepository(env.db).save(samplePet()));
+    await pumpScreen(tester, env, const HistoryScreen());
+    // Una sola línea de 34 pt (con la escala 1.3 cabe en ~60 de alto); partido serían dos.
+    expect(tester.getSize(find.text('Historial')).height, lessThan(70));
+    await unmount(tester);
+  });
 }

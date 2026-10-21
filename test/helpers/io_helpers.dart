@@ -18,8 +18,18 @@ Future<File> writePng(Directory dir, String name) async {
 /// Los archivos y la BD usan E/S real, que el reloj falso no hace avanzar:
 /// alterna tiempo real y cuadros hasta que se encadenan todos los pasos.
 Future<void> settleIo(WidgetTester tester) async {
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 25; i++) {
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 40)));
     await tester.pump();
   }
+}
+
+/// Como [settleIo] pero espera (hasta ~4 s reales) a que aparezca [finder]:
+/// con la máquina cargada la E/S real tarda más que unos cuantos cuadros fijos.
+Future<void> settleUntil(WidgetTester tester, Finder finder, {int tries = 100}) async {
+  for (var i = 0; i < tries && finder.evaluate().isEmpty; i++) {
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 40)));
+    await tester.pump();
+  }
+  await tester.pumpAndSettle();
 }

@@ -35,6 +35,10 @@ final petRepoProvider =
     Provider<PetRepository>((ref) => DriftPetRepository(ref.watch(databaseProvider)));
 final treatmentRepoProvider =
     Provider<TreatmentRepository>((ref) => DriftTreatmentRepository(ref.watch(databaseProvider)));
+final medicationRepoProvider =
+    Provider<MedicationRepository>((ref) => DriftMedicationRepository(ref.watch(databaseProvider)));
+final careRepoProvider =
+    Provider<CareRepository>((ref) => DriftCareRepository(ref.watch(databaseProvider)));
 final eventRepoProvider =
     Provider<EventRepository>((ref) => DriftEventRepository(ref.watch(databaseProvider)));
 final weightRepoProvider =
@@ -58,6 +62,8 @@ final healthServiceProvider = Provider<HealthService>((ref) => HealthService(
 final reminderCoordinatorProvider = Provider<ReminderCoordinator>((ref) => ReminderCoordinator(
       pets: ref.watch(petRepoProvider),
       treatments: ref.watch(treatmentRepoProvider),
+      medications: ref.watch(medicationRepoProvider),
+      care: ref.watch(careRepoProvider),
       scheduler: ref.watch(schedulerProvider),
       prefs: ref.watch(prefsProvider),
       now: ref.watch(clockProvider),
@@ -115,6 +121,17 @@ final currentPetProvider = Provider<Pet?>((ref) {
   return pets.firstWhere((p) => p.id == id, orElse: () => pets.first);
 });
 
+final medicationsProvider =
+    StreamProvider<List<Medication>>((ref) => ref.watch(medicationRepoProvider).watchAll());
+final doseLogsProvider =
+    StreamProvider<List<DoseLog>>((ref) => ref.watch(medicationRepoProvider).watchLogs());
+final routinesForPetProvider = StreamProvider.family<List<Routine>, String>(
+    (ref, petId) => ref.watch(careRepoProvider).watchRoutines(petId));
+final foodsForPetProvider = StreamProvider.family<List<FoodStock>, String>(
+    (ref, petId) => ref.watch(careRepoProvider).watchFoods(petId));
+final expensesForPetProvider = StreamProvider.family<List<Expense>, String>(
+    (ref, petId) => ref.watch(careRepoProvider).watchExpenses(petId));
+
 final eventsForPetProvider = StreamProvider.family<List<HealthEvent>, String>(
     (ref, petId) => ref.watch(eventRepoProvider).watchForPet(petId));
 
@@ -130,7 +147,11 @@ final shareFileProvider = Provider<ShareFile>((ref) => shareFileWithSystem);
 typedef BiometricAuth = Future<bool> Function();
 typedef PickBackupFile = Future<File?> Function();
 typedef PickPhoto = Future<File?> Function(ImageSource source);
+typedef OpenUri = Future<bool> Function(Uri uri);
+typedef RecognizeText = Future<RecognizedText?> Function(File image);
 
 final biometricAuthProvider = Provider<BiometricAuth>((ref) => authenticateWithBiometrics);
 final pickBackupFileProvider = Provider<PickBackupFile>((ref) => pickBackupZip);
 final pickPhotoProvider = Provider<PickPhoto>((ref) => pickPhotoWithPicker);
+final openUriProvider = Provider<OpenUri>((ref) => openUri);
+final recognizeTextProvider = Provider<RecognizeText>((ref) => recognizeTextInImage);

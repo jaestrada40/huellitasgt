@@ -79,7 +79,9 @@ class _PetCard extends ConsumerWidget {
             const SizedBox(height: 2),
             Text(detail, style: AppText.body),
             const SizedBox(height: 8),
-            pending > 0
+            pet.inMemoriam
+                ? const StatusChip('En memoria', StatusKind.ok)
+                : pending > 0
                 ? StatusChip('$pending ${pending == 1 ? 'pendiente' : 'pendientes'}', StatusKind.soon)
                 : const StatusChip('Al día', StatusKind.ok),
           ]),

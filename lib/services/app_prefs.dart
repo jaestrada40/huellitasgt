@@ -14,6 +14,13 @@ class AppPrefs {
     return t.isEmpty ? _p.remove('userName') : _p.setString('userName', t);
   }
 
+  /// Teléfono de contacto para la ficha de mascota perdida.
+  String? get ownerPhone => _p.getString('ownerPhone');
+  Future<void> setOwnerPhone(String phone) {
+    final t = phone.trim();
+    return t.isEmpty ? _p.remove('ownerPhone') : _p.setString('ownerPhone', t);
+  }
+
   WeightUnit get weightUnit =>
       _p.getString('weightUnit') == 'lb' ? WeightUnit.lb : WeightUnit.kg;
   Future<void> setWeightUnit(WeightUnit u) => _p.setString('weightUnit', u.name);

@@ -151,3 +151,100 @@ class DriftWeightRepository implements WeightRepository {
   Future<void> delete(String id) =>
       (_db.delete(_db.weightEntries)..where((t) => t.id.equals(id))).go();
 }
+
+class DriftMedicationRepository implements MedicationRepository {
+  DriftMedicationRepository(this._db);
+  final AppDatabase _db;
+
+  SimpleSelectStatement<$MedicationsTable, MedicationRow> get _q =>
+      _db.select(_db.medications)..orderBy([(t) => OrderingTerm.asc(t.startAt)]);
+
+  @override
+  Stream<List<Medication>> watchAll() => _q.watch().map((r) => r.map(medicationFromRow).toList());
+
+  @override
+  Future<List<Medication>> all() async => (await _q.get()).map(medicationFromRow).toList();
+
+  @override
+  Future<void> saveAll(List<Medication> meds) => _db.batch((b) {
+        b.insertAllOnConflictUpdate(_db.medications, meds.map(medicationToCompanion));
+      });
+
+  @override
+  Future<void> setActive(String id, bool active) =>
+      (_db.update(_db.medications)..where((t) => t.id.equals(id)))
+          .write(MedicationsCompanion(active: Value(active)));
+
+  @override
+  Stream<List<DoseLog>> watchLogs() =>
+      _db.select(_db.doseLogs).watch().map((r) => r.map(doseLogFromRow).toList());
+
+  @override
+  Future<List<DoseLog>> logs() async =>
+      (await _db.select(_db.doseLogs).get()).map(doseLogFromRow).toList();
+
+  @override
+  Future<void> setDose(String medicationId, int doseIndex, DateTime? at) async {
+    if (at == null) {
+      await (_db.delete(_db.doseLogs)
+            ..where((t) => t.medicationId.equals(medicationId) & t.doseIndex.equals(doseIndex)))
+          .go();
+    } else {
+      await _db.into(_db.doseLogs).insertOnConflictUpdate(
+          doseLogToCompanion(DoseLog(medicationId: medicationId, doseIndex: doseIndex, givenAt: at)));
+    }
+  }
+}
+
+class DriftCareRepository implements CareRepository {
+  DriftCareRepository(this._db);
+  final AppDatabase _db;
+
+  @override
+  Stream<List<Routine>> watchRoutines(String petId) => (_db.select(_db.routines)
+        ..where((t) => t.petId.equals(petId))
+        ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+      .watch()
+      .map((r) => r.map(routineFromRow).toList());
+
+  @override
+  Future<void> saveRoutine(Routine r) =>
+      _db.into(_db.routines).insertOnConflictUpdate(routineToCompanion(r));
+
+  @override
+  Future<void> deleteRoutine(String id) =>
+      (_db.delete(_db.routines)..where((t) => t.id.equals(id))).go();
+
+  @override
+  Stream<List<FoodStock>> watchFoods(String petId) => (_db.select(_db.foodStocks)
+        ..where((t) => t.petId.equals(petId)))
+      .watch()
+      .map((r) => r.map(foodFromRow).toList());
+
+  @override
+  Future<List<FoodStock>> foods() async =>
+      (await _db.select(_db.foodStocks).get()).map(foodFromRow).toList();
+
+  @override
+  Future<void> saveFood(FoodStock f) =>
+      _db.into(_db.foodStocks).insertOnConflictUpdate(foodToCompanion(f));
+
+  @override
+  Future<void> deleteFood(String id) =>
+      (_db.delete(_db.foodStocks)..where((t) => t.id.equals(id))).go();
+
+  @override
+  Stream<List<Expense>> watchExpenses(String petId) => (_db.select(_db.expenses)
+        ..where((t) => t.petId.equals(petId))
+        ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+      .watch()
+      .map((r) => r.map(expenseFromRow).toList());
+
+  @override
+  Future<void> saveExpense(Expense e) =>
+      _db.into(_db.expenses).insertOnConflictUpdate(expenseToCompanion(e));
+
+  @override
+  Future<void> deleteExpense(String id) =>
+      (_db.delete(_db.expenses)..where((t) => t.id.equals(id))).go();
+}

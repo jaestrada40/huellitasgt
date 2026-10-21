@@ -119,4 +119,30 @@ void main() {
     expect(file.existsSync(), isTrue);
     await unmount(tester);
   });
+
+  testWidgets('al elegir una foto con el teclado abierto, el teclado se cierra antes de la hoja «Ajusta la foto»', (tester) async {
+    tall(tester);
+    // ¿Hay un campo de texto con el foco (o sea, el teclado abierto)?
+    bool typing() =>
+        FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<EditableText>() != null;
+    final env = await createEnv();
+    env.pickedPhoto = (await tester.runAsync(() => writePng(env.docs, 'perro.png')))!;
+    var typingWhenPickerOpened = true;
+    env.onPickPhoto = () => typingWhenPickerOpened = typing();
+    await pumpScreen(tester, env, const PetFormScreen(first: true));
+
+    await tester.tap(find.byKey(const Key('petNameField')));
+    await tester.pump();
+    expect(typing(), isTrue); // teclado abierto
+
+    await tester.tap(find.text('Elegir de la galería'));
+    await settleUntil(tester, find.text('Ajusta la foto'));
+
+    expect(find.text('Ajusta la foto'), findsOneWidget);
+    expect(typingWhenPickerOpened, isFalse); // la galería se abre sin campo con foco
+    expect(typing(), isFalse); // ningún campo con foco: el teclado se cerró
+    await tester.tap(find.text('Listo'));
+    await tester.pumpAndSettle();
+    await unmount(tester);
+  });
 }
